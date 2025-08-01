@@ -1,12 +1,18 @@
+#wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
 :root {
     --input-background-color: rgb(237, 237, 237);
     --chat-bot__content-color: rgb(240, 240, 240);
     --chat-user__content-color: rgb(0, 122, 255);
     --chat__time-color: rgb(137, 137, 137);
     /* --action-btn-color: rgb(0, 69, 143); */
-    --action-btn-color: rgb(195, 210, 237);
+    --action-btn-color: rgb(219, 228, 244);
     --action-btn-font-color: rgb(0, 69, 143);
-    --level-button-color: rgb(195, 210, 237);
+    --level-button-color: rgb(219, 228, 244); 
 }
 
 [class*="__mark"] {

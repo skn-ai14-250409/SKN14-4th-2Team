@@ -7,7 +7,7 @@ import requests
 import os
 from bs4 import BeautifulSoup
 import yfinance as yf
-from pykrx import stock
+from pykrx import stock as pykrx_stock
 import pandas as pd
 from datetime import datetime, timedelta, timezone
 import numpy as np
@@ -122,11 +122,11 @@ def get_stock_info(request):
 
             # KRX 티커 정보 로드 및 캐싱 개선 (휴일/주말에도 안전하게)
             if 'krx_tickers' not in get_stock_info.__dict__:
-                latest_day_for_map = stock.get_nearest_business_day_in_a_week()
-                kospi = stock.get_market_ticker_list(date=latest_day_for_map, market="KOSPI")
-                kosdaq = stock.get_market_ticker_list(date=latest_day_for_map, market="KOSDAQ")
+                latest_day_for_map = pykrx_stock.get_nearest_business_day_in_a_week()
+                kospi = pykrx_stock.get_market_ticker_list(date=latest_day_for_map, market="KOSPI")
+                kosdaq = pykrx_stock.get_market_ticker_list(date=latest_day_for_map, market="KOSDAQ")
                 tickers = kospi + kosdaq
-                name_to_code = {stock.get_market_ticker_name(ticker): ticker for ticker in tickers}
+                name_to_code = {pykrx_stock.get_market_ticker_name(ticker): ticker for ticker in tickers}
                 get_stock_info.krx_tickers = name_to_code
                 print(f"KRX 티커 정보 로드 완료. ({len(tickers)}개 종목)")
 
@@ -160,8 +160,8 @@ def get_stock_info(request):
             company_name = found_name # 공식 명칭으로 업데이트
             
             # yfinance Ticker 객체 생성
-            latest_day = stock.get_nearest_business_day_in_a_week()
-            kospi_tickers = stock.get_market_ticker_list(date=latest_day, market="KOSPI")
+            latest_day = pykrx_stock.get_nearest_business_day_in_a_week()
+            kospi_tickers = pykrx_stock.get_market_ticker_list(date=latest_day, market="KOSPI")
             
             is_kospi = code in kospi_tickers
             yahoo_code = f"{code}.KS" if is_kospi else f"{code}.KQ"

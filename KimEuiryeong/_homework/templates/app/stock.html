@@ -1,0 +1,97 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "css/app/stock.css" %}">
+{% endblock head %}
+
+{% block title %}stock page{% endblock title %}
+
+{% block content %}
+<div id="wrapper">
+    <div class="stock-container">
+        <div class="favorite-container">
+            <div class="list-section">
+                <div class="favorite-list__name">즐겨찾기 목록</div>
+                <div class="section-content">
+                    <div class="favorite-list__box">
+                        <div class="favorite-list__title">삼성전자</div>
+                        <div class="favorite-list__code">005930.KS</div>
+                        <div class="favorite-heart active"><i class="bi bi-heart"></i></div>
+                    </div>
+                    <div class="favorite-list__box">
+                        <div class="favorite-list__title">SK하이닉스</div>
+                        <div class="favorite-list__code">000660.KS</div>
+                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                    </div>
+                    <!-- 스크롤 테스트용 임시 데이터 -->
+                    <div class="favorite-list__box">
+                        <div class="favorite-list__title">NAVER</div>
+                        <div class="favorite-list__code">035420.KS</div>
+                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                    </div>
+                    <div class="favorite-list__box">
+                        <div class="favorite-list__title">HDC현대산업개발</div>
+                        <div class="favorite-list__code">294870.KS</div>
+                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                    </div>
+                    <div class="favorite-list__box">
+                        <div class="favorite-list__title">셀트리온</div>
+                        <div class="favorite-list__code">068270.KS</div>
+                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                    </div>
+                    <div class="favorite-list__box">
+                        <div class="favorite-list__title">POSCO홀딩스</div>
+                        <div class="favorite-list__code">005490.KS</div>
+                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                    </div>
+                    <div class="favorite-list__box">
+                        <div class="favorite-list__title">LG화학</div>
+                        <div class="favorite-list__code">051910.KS</div>
+                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                    </div>
+                    <div class="favorite-list__box">
+                        <div class="favorite-list__title">기아</div>
+                        <div class="favorite-list__code">000270.KS</div>
+                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                    </div>
+                     <!-- 스크롤 테스트용 임시 데이터 끝 -->
+                </div>
+            </div>
+
+            <div class="list-section history-section accordion collapsed">
+                <div class="accordion-header">
+                    <span class="favorite-list__name">검색 기록</span>
+                    <i class="bi bi-chevron-down accordion-icon"></i>
+                </div>
+                <div class="section-content">
+                    <div class="favorite-list__box">
+                        <div class="favorite-list__title">카카오</div>
+                        <div class="favorite-list__code">035720.KS</div>
+                        <button class="delete-btn"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                    <div class="favorite-list__box">
+                        <div class="favorite-list__title">현대차</div>
+                        <div class="favorite-list__code">005380.KS</div>
+                        <button class="delete-btn"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-container">
+            d
+        </div>
+
+        <div class="review-container">
+            d
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block script %}
+    <script src="{% static 'js/app/stock.js' %}"></script>
+{% endblock script %}
+
