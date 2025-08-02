@@ -12,3 +12,6 @@ create database if not exists jembotdb character set utf8mb4 collate utf8mb4_uni
 grant all privileges on jembotdb.* to 'jembot'@'%';
 # 변경된 권한 설정을 서버 메모리에 즉시 로드하여 적용합니다.
 flush privileges;
+
+DROP DATABASE jembotdb;
+CREATE DATABASE jembotdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

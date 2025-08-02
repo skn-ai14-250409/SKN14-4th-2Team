@@ -70,6 +70,8 @@ class ChatBot {
             
             if (data.sessions) {
                 this.sessions = data.sessions;
+                // updated_at 순으로 정렬 (최신순) - 백엔드에서 정렬되어 오지만 일관성을 위해
+                this.sessions.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
                 this.renderSessions();
                 
                 // 첫 번째 세션이 있으면 로드 (단, loadSessions을 직접 호출한 경우가 아닐 때만)
@@ -219,7 +221,7 @@ class ChatBot {
             if (msg.type === 'user') {
                 this.addUserMessage(msg.content, msg.timestamp, false);
             } else if (msg.type === 'bot') {
-                this.addBotMessage(msg.content, msg.timestamp, 'basic', false);
+                this.addBotMessage(msg.content, msg.timestamp, msg.level || 'basic', false);
             }
         });
         
@@ -259,7 +261,10 @@ class ChatBot {
                     created_at: data.session.created_at,
                     updated_at: data.session.created_at
                 };
-                this.sessions.unshift(newSession); // 목록 맨 앞에 추가
+                this.sessions.push(newSession);
+                
+                // updated_at 순으로 재정렬 (최신순)
+                this.sessions.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
                 
                 // 화면 즉시 업데이트
                 this.renderSessions();
@@ -440,9 +445,9 @@ class ChatBot {
                 // 세션 목록에서 현재 세션의 updated_at 시간 업데이트
                 this.updateSessionTimestamp(this.currentSessionId);
                 
-                // 첫 번째 메시지인 경우 세션 제목 업데이트
-                if (this.chatHistory.length === 2) { // user + bot = 2
-                    this.updateSessionTitle(this.currentSessionId, message);
+                // 첫 번째 메시지인 경우 세션 제목 업데이트 (백엔드에서 보내준 제목 사용)
+                if (data.is_first_message && data.updated_title) {
+                    this.updateSessionTitle(this.currentSessionId, data.updated_title);
                 }
             } else {
                 // 에러 메시지 추가

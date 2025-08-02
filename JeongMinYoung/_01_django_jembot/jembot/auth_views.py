@@ -10,7 +10,7 @@ import requests as http_requests
 import json
 import uuid
 
-from .models import Custom_user, ChatSession
+from .models import CustomUser, ChatSession
 
 def google_login(request):
     """구글 로그인 페이지"""
@@ -69,11 +69,21 @@ def google_callback(request):
         picture = id_info.get('picture', '')
         
         # 사용자 생성 또는 가져오기
-        user, created = Custom_user.objects.get_or_create(
+        # 닉네임 생성 (이메일의 @ 앞 부분 + 고유 번호)
+        base_nickname = email.split('@')[0]
+        unique_nickname = base_nickname
+        counter = 1
+        while CustomUser.objects.filter(nickname=unique_nickname).exists():
+            unique_nickname = f"{base_nickname}{counter}"
+            counter += 1
+        
+        user, created = CustomUser.objects.get_or_create(
             google_id=google_id,
             defaults={
                 'username': email,
                 'email': email,
+                'nickname': unique_nickname,
+                'user_name': name if name else email.split('@')[0],
                 'first_name': name.split()[0] if name else '',
                 'last_name': ' '.join(name.split()[1:]) if name and len(name.split()) > 1 else '',
                 'profile_picture': picture,
@@ -83,6 +93,7 @@ def google_callback(request):
         if not created:
             # 기존 사용자 정보 업데이트
             user.email = email
+            user.user_name = name if name else user.user_name or email.split('@')[0]
             user.first_name = name.split()[0] if name else ''
             user.last_name = ' '.join(name.split()[1:]) if name and len(name.split()) > 1 else ''
             user.profile_picture = picture
@@ -110,7 +121,7 @@ def user_profile(request):
 @login_required
 def chat_sessions(request):
     """사용자의 채팅 세션 목록"""
-    sessions = ChatSession.objects.filter(user=request.user, is_active=True)
+    sessions = ChatSession.objects.filter(user=request.user, is_active=True).order_by('-updated_at')
     return JsonResponse({
         'sessions': list(sessions.values('id', 'session_id', 'title', 'created_at', 'updated_at'))
     })

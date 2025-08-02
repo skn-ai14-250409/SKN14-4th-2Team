@@ -139,7 +139,7 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # 커스텀 유저 모델 설정
-AUTH_USER_MODEL = 'jembot.Custom_user'
+AUTH_USER_MODEL = 'jembot.CustomUser'
 
 # 로그인/로그아웃 리다이렉트 URL
 LOGIN_URL = '/login/'
