@@ -4,6 +4,7 @@
 {% block head %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static "css/app/stock.css" %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock head %}
 
 {% block title %}stock page{% endblock title %}
@@ -12,80 +13,488 @@
 <div id="wrapper">
     <div class="stock-container">
         <div class="favorite-container">
-            <div class="list-section">
+            <div class="list-section favorites-section">
                 <div class="favorite-list__name">즐겨찾기 목록</div>
                 <div class="section-content">
                     <div class="favorite-list__box">
                         <div class="favorite-list__title">삼성전자</div>
                         <div class="favorite-list__code">005930.KS</div>
-                        <div class="favorite-heart active"><i class="bi bi-heart"></i></div>
+                        <div class="favorite-heart active">
+                            <i class="bi bi-heart-fill"></i>
+                            <span class="like-count">24</span>
+                        </div>
                     </div>
                     <div class="favorite-list__box">
                         <div class="favorite-list__title">SK하이닉스</div>
                         <div class="favorite-list__code">000660.KS</div>
-                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                        <div class="favorite-heart active">
+                            <i class="bi bi-heart-fill"></i>
+                            <span class="like-count">18</span>
+                        </div>
                     </div>
-                    <!-- 스크롤 테스트용 임시 데이터 -->
                     <div class="favorite-list__box">
                         <div class="favorite-list__title">NAVER</div>
                         <div class="favorite-list__code">035420.KS</div>
-                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                        <div class="favorite-heart active">
+                            <i class="bi bi-heart-fill"></i>
+                            <span class="like-count">15</span>
+                        </div>
                     </div>
                     <div class="favorite-list__box">
                         <div class="favorite-list__title">HDC현대산업개발</div>
                         <div class="favorite-list__code">294870.KS</div>
-                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                        <div class="favorite-heart active">
+                            <i class="bi bi-heart-fill"></i>
+                            <span class="like-count">9</span>
+                        </div>
                     </div>
                     <div class="favorite-list__box">
                         <div class="favorite-list__title">셀트리온</div>
                         <div class="favorite-list__code">068270.KS</div>
-                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                        <div class="favorite-heart active">
+                            <i class="bi bi-heart-fill"></i>
+                            <span class="like-count">12</span>
+                        </div>
                     </div>
                     <div class="favorite-list__box">
                         <div class="favorite-list__title">POSCO홀딩스</div>
                         <div class="favorite-list__code">005490.KS</div>
-                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                        <div class="favorite-heart active">
+                            <i class="bi bi-heart-fill"></i>
+                            <span class="like-count">7</span>
+                        </div>
                     </div>
                     <div class="favorite-list__box">
                         <div class="favorite-list__title">LG화학</div>
                         <div class="favorite-list__code">051910.KS</div>
-                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                        <div class="favorite-heart active">
+                            <i class="bi bi-heart-fill"></i>
+                            <span class="like-count">11</span>
+                        </div>
                     </div>
                     <div class="favorite-list__box">
                         <div class="favorite-list__title">기아</div>
                         <div class="favorite-list__code">000270.KS</div>
-                        <div class="favorite-heart"><i class="bi bi-heart"></i></div>
+                        <div class="favorite-heart active">
+                            <i class="bi bi-heart-fill"></i>
+                            <span class="like-count">6</span>
+                        </div>
                     </div>
-                     <!-- 스크롤 테스트용 임시 데이터 끝 -->
                 </div>
             </div>
 
             <div class="list-section history-section accordion collapsed">
                 <div class="accordion-header">
-                    <span class="favorite-list__name">검색 기록</span>
+                    <span class="history-list__name">검색 기록</span>
                     <i class="bi bi-chevron-down accordion-icon"></i>
                 </div>
                 <div class="section-content">
-                    <div class="favorite-list__box">
-                        <div class="favorite-list__title">카카오</div>
-                        <div class="favorite-list__code">035720.KS</div>
+                    <div class="history-list__box">
+                        <div>
+                            <span class="history-list__title">카카오</span>
+                            <span class="history-list__code">035720.KS</span>
+                        </div>
                         <button class="delete-btn"><i class="bi bi-x-lg"></i></button>
                     </div>
-                    <div class="favorite-list__box">
-                        <div class="favorite-list__title">현대차</div>
-                        <div class="favorite-list__code">005380.KS</div>
+                    <div class="history-list__box">
+                        <div>
+                            <span class="history-list__title">현대차</span>
+                            <span class="history-list__code">005380.KS</span>
+                        </div>
                         <button class="delete-btn"><i class="bi bi-x-lg"></i></button>
                     </div>
+                    <div class="history-list__box">
+                        <div>
+                            <span class="history-list__title">현대차</span>
+                            <span class="history-list__code">005380.KS</span>
+                        </div>
+                        <button class="delete-btn"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                    <div class="history-list__box">
+                        <div>
+                            <span class="history-list__title">현대차</span>
+                            <span class="history-list__code">005380.KS</span>
+                        </div>
+                        <button class="delete-btn"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                    <div class="history-list__box">
+                        <div>
+                            <span class="history-list__title">현대차</span>
+                            <span class="history-list__code">005380.KS</span>
+                        </div>
+                        <button class="delete-btn"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                    <div class="history-list__box">
+                        <div>
+                            <span class="history-list__title">현대차</span>
+                            <span class="history-list__code">005380.KS</span>
+                        </div>
+                        <button class="delete-btn"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                    <div class="history-list__box">
+                        <div>
+                            <span class="history-list__title">현대차</span>
+                            <span class="history-list__code">005380.KS</span>
+                        </div>
+                        <button class="delete-btn"><i class="bi bi-x-lg"></i></button>
+                    </div>
+
                 </div>
             </div>
         </div>
 
         <div class="info-container">
-            d
+            <div class="stock-info">
+                <div class="stock-header">
+                    <div class="stock-info-display" id="stockInfoDisplay" style="display: none;">
+                        <div class="stock-title">
+                            <h2 id="companyName">--</h2>
+                            <span class="stock-symbol" id="stockSymbol">--</span>
+                            <div class="related-stocks" id="relatedStocks" style="display: none;">
+                                <div class="related-stocks-list" id="relatedStocksList"></div>
+                            </div>
+                        </div>
+                        <div class="stock-price">
+                            <div class="current-price" id="currentPrice">₩--</div>
+                            <div class="price-change" id="priceChange">--</div>
+                            <div class="update-time" id="updateTime">업데이트 중...</div>
+                        </div>
+                    </div>
+                    <!-- 헤더로 이동된 검색창 -->
+                    <div class="stock-search" style="display: none;">
+                        <div class="search-input-container">
+                            <input type="text" id="stockSearchInput" placeholder="회사명을 입력하세요 (예: 삼성전자, 네이버)" class="stock-search-input">
+                            <button id="stockSearchBtn" class="stock-search-btn">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                        <div class="search-suggestions" id="searchSuggestions" style="display: none;">
+                            <div class="suggestions-title">혹시 이거 찾으세요?</div>
+                            <div class="suggestions-list" id="suggestionsList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stock-details">
+                    <div class="detail-section">
+                        <div class="stock-period-selector">
+                            <button class="period-button active">1일</button>
+                            <button class="period-button">5일</button>
+                            <button class="period-button">1개월</button>
+                            <button class="period-button">6개월</button>
+                            <button class="period-button">연중</button>
+                            <button class="period-button">1년</button>
+                            <button class="period-button">5년</button>
+                            <button class="period-button">최대</button>
+                        </div>
+                        <div class="chart-and-ranking-container">
+                            <div class="stock-chart-container">
+                                <div class="stock-chart" id="stockChartContainer">
+                                    <canvas id="stockChart" width="400" height="200"></canvas>
+                                </div>
+                            
+                                <!-- 초기 상태 -->
+                                <div class="stock-empty-state" id="stockEmptyState">
+                                    <div class="empty-state-icon">
+                                        <i class="bi bi-search"></i>
+                                    </div>
+                                    <div class="empty-state-text">
+                                        <p>궁금한 기업명을 검색하여</p>
+                                        <p>주식 정보를 확인하세요.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-details" id="chartDetails" style="display: none;">
+                                <div class="detail-item">
+                                    <span class="label">시가총액</span>
+                                    <span class="value" id="marketCap">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">거래량</span>
+                                    <span class="value" id="volume">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">52주 최고</span>
+                                    <span class="value" id="fiftyTwoWeekHigh">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">52주 최저</span>
+                                    <span class="value" id="fiftyTwoWeekLow">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Forward P/E</span>
+                                    <span class="value" id="perValue">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">배당수익률</span>
+                                    <span class="value" id="dividendYield">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">당일 최고가</span>
+                                    <span class="value" id="dayHigh">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">당일 최저가</span>
+                                    <span class="value" id="dayLow">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 주식 정보 요약 섹션 -->
+                        <div class="jembot-summary-container" id="jembotSummaryContainer" style="display: none;">
+                            <div class="jembot-summary-title">
+                                <h3>Jembot 주식 정보 요약</h3>
+                            </div>
+                            <div class="jembot-summary-content">
+                                <div class="jembot-summary-item">
+                                    삼성전자 2024년 1분기 리서치 보고서
+                                    1. 핵심 요약
+                                    삼성전자는 2024년 1분기 동안 글로벌 전자 기업으로서의 입지를 유지하며, 매출액 300,871억원, 영업이익 32,726억원, 당기순이익 34,451억원을 기록했습니다. 이는 전년 동기 대비 매출과 이익 모두 증가한 수치로, 특히 영업이익이 크게 개선되었습니다.
+                                    
+                                    2. 사업 분석
+                                    삼성전자는 DX(Device eXperience) 부문과 DS(Device Solutions) 부문을 중심으로 사업을 운영하고 있습니다. DX 부문은 TV, 스마트폰 등 다양한 전자제품을 생산하며, DS 부문은 DRAM, NAND Flash 등 반도체 제품을 주력으로 하고 있습니다. 또한, SDC는 OLED 패널을, Harman은 커넥티드카 솔루션을 제공하며 시장에서의 경쟁력을 강화하고 있습니다.
+                                    
+                                    3. 재무 분석
+                                    2024년 1분기 매출액은 300,871억원으로 전년 동기 대비 증가했습니다. 영업이익은 32,726억원으로 전년 대비 큰 폭으로 증가하였으며, 이는 매출원가와 판매비 및 관리비의 효율적 관리에 기인합니다. 부채총계는 112,340억원으로, 자본총계 402,192억원 대비 안정적인 재무구조를 유지하고 있습니다.
+                                    
+                                    4. 종합 의견
+                                    삼성전자는 2024년 1분기 동안 견고한 실적을 기록하며, 글로벌 시장에서의 경쟁력을 지속적으로 강화하고 있습니다. 그러나 반도체 시장의 변동성과 글로벌 경제 불확실성은 여전히 리스크 요인으로 작용할 수 있습니다. 이러한 점을 감안하여, 지속적인 기술 혁신과 시장 다변화 전략이 필요할 것으로 보입니다.
+                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="review-container">
-            d
+            <div class = 'review-inside'>
+                <div class="review-list">
+                    <div class = 'review-list-title'>커뮤니티 <span class="comment-count">(8)</span></div>
+                    <div class="review-box">
+                        <div class="review-header">
+                            <div class="profile-box">
+                                <div class="profile-img"></div>
+                                <div class="user-info">
+                                    <div class="user-nikname">의령공주짱</div>
+                                    <div>
+                                        <span class="upload-time">1분전</span>
+                                        <span class="review-delete-btn">
+                                            <i class="bi bi-trash"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="like-button">
+                                <i class="bi bi-heart"></i>
+                                <span class="like-count">12</span>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            와... 오늘도 삼성전자 미쳤다. 5% 급등이라니. 다음 주까지 들고 가도 될까?
+                        </div>
+                    </div>
+                    <div class="review-box">
+                        <div class="review-header">
+                            <div class="profile-box">
+                                <div class="profile-img"></div>
+                                <div class="user-info">
+                                    <div class="user-nikname">투자왕</div>
+                                    <div>
+                                        <span class="upload-time">3분전</span>
+                                        <span class="review-delete-btn">
+                                            <i class="bi bi-trash"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="like-button active">
+                                <i class="bi bi-heart-fill"></i>
+                                <span class="like-count">8</span>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            삼성전자 실적 발표 나왔는데 예상보다 좋네요. 반도체 부문이 특히 강세입니다.
+                        </div>
+                    </div>
+                    <div class="review-box">
+                        <div class="review-header">
+                            <div class="profile-box">
+                                <div class="profile-img"></div>
+                                <div class="user-info">
+                                    <div class="user-nikname">주식초보</div>
+                                    <div>
+                                        <span class="upload-time">5분전</span>
+                                        <span class="review-delete-btn">
+                                            <i class="bi bi-trash"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="like-button">
+                                <i class="bi bi-heart"></i>
+                                <span class="like-count">3</span>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            처음 투자하는데 삼성전자 어때요? 안전한가요?
+                        </div>
+                    </div>
+                    <div class="review-box">
+                        <div class="review-header">
+                            <div class="profile-box">
+                                <div class="profile-img"></div>
+                                <div class="user-info">
+                                    <div class="user-nikname">차트마스터</div>
+                                    <div>
+                                        <span class="upload-time">7분전</span>
+                                        <span class="review-delete-btn">
+                                            <i class="bi bi-trash"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="like-button active">
+                                <i class="bi bi-heart-fill"></i>
+                                <span class="like-count">15</span>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            삼성전자 차트 보면 지지선이 강하네요. 70,000원 근처에서 반등할 것 같습니다.
+                        </div>
+                    </div>
+                    <div class="review-box">
+                        <div class="review-header">
+                            <div class="profile-box">
+                                <div class="profile-img"></div>
+                                <div class="user-info">
+                                    <div class="user-nikname">주식초보</div>
+                                    <div>
+                                        <span class="upload-time">5분전</span>
+                                        <span class="review-delete-btn">
+                                            <i class="bi bi-trash"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="like-button">
+                                <i class="bi bi-heart"></i>
+                                <span class="like-count">6</span>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            RSI가 과매수 구간에 있어서 조심해야 할 것 같아요. 단기 조정 가능성 있습니다.
+                        </div>
+                    </div>
+                    <div class="review-box">
+                        <div class="review-header">
+                            <div class="profile-box">
+                                <div class="profile-img"></div>
+                                <div class="user-info">
+                                    <div class="user-nikname">펀드매니저</div>
+                                    <div>
+                                        <span class="upload-time">25분전</span>
+                                        <span class="review-delete-btn">
+                                            <i class="bi bi-trash"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="like-button active">
+                                <i class="bi bi-heart-fill"></i>
+                                <span class="like-count">18</span>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            기관투자자들이 삼성전자에 대한 목표주가를 상향 조정했습니다. 80,000원 돌파 가능성 높아요.
+                        </div>
+                    </div>
+                    <div class="review-box">
+                        <div class="review-header">
+                            <div class="profile-box">
+                                <div class="profile-img"></div>
+                                <div class="user-info">
+                                    <div class="user-nikname">뉴스헌터</div>
+                                    <div>
+                                        <span class="upload-time">30분전</span>
+                                        <span class="review-delete-btn">
+                                            <i class="bi bi-trash"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="like-button">
+                                <i class="bi bi-heart"></i>
+                                <span class="like-count">9</span>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            삼성전자, 미국 애플과 새로운 파트너십 체결 예정이라는 뉴스가 나왔네요. 긍정적입니다.
+                        </div>
+                    </div>
+                    <div class="review-box">
+                        <div class="review-header">
+                            <div class="profile-box">
+                                <div class="profile-img"></div>
+                                <div class="user-info">
+                                    <div class="user-nikname">배당투자자</div>
+                                    <div>
+                                        <span class="upload-time">35분전</span>
+                                        <span class="review-delete-btn">
+                                            <i class="bi bi-trash"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="like-button">
+                                <i class="bi bi-heart"></i>
+                                <span class="like-count">7</span>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            배당률이 2.5%로 괜찮네요. 안정적인 배당주로도 좋은 선택인 것 같습니다.
+                        </div>
+                    </div>
+                    <div class="review-box">
+                        <div class="review-header">
+                            <div class="profile-box">
+                                <div class="profile-img"></div>
+                                <div class="user-info">
+                                    <div class="user-nikname">AI트레이더</div>
+                                    <div>
+                                        <span class="upload-time">40분전</span>
+                                        <span class="review-delete-btn">
+                                            <i class="bi bi-trash"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="like-button active">
+                                <i class="bi bi-heart-fill"></i>
+                                <span class="like-count">31</span>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            AI 알고리즘이 삼성전자 매수 신호를 보내고 있습니다. 기술적 지표들이 모두 긍정적이에요.
+                        </div>
+                    </div>
+                </div>
+                <div class = "review-input__container">
+                    <div class = "review-input">
+                        <div class = 'review-input__box'>
+                            <input type="text" placeholder="댓글을 남겨주세요" />
+                        </div>
+                        <div class="review-search-button">
+                            <button type="button" class="btn btn-outline-secondary">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
