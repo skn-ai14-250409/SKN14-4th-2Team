@@ -385,4 +385,6 @@ $RECYCLE.BIN/
 
 # Streamlit secrets
 .streamlit/
-.streamlit/secrets.toml
+.streamlit/secrets.toml__pycache__/
+*.pyc
+.venv/
