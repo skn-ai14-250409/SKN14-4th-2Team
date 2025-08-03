@@ -1,0 +1,6 @@
+*.pyc
+__pycache__/
+.env
+# FAISS 인덱스 폴더들
+app/utils2/faiss_index_bge_m3/
+app/utils2/faiss_index3/
