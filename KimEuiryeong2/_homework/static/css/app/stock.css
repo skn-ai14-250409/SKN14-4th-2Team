@@ -105,14 +105,14 @@
 }
 /* 스크롤바 스타일링 */
 .section-content::-webkit-scrollbar {
-    width: 5px;
+    width: 4px;
 }
 .section-content::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 5px;
+    background: rgba(180,180,180,0.3);
+    border-radius: 4px;
 }
 .section-content::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: transparent;
 }
 
 /* --- 검색 기록 항목만 한 줄로 표시하기 위한 스타일 --- */
@@ -356,6 +356,7 @@
     font-size: 12px;
     color: #6c757d;
     margin-left: auto;
+    margin-right: 10px;
 }
 
 .like-button:hover {
@@ -431,6 +432,18 @@
     padding: 20px;
     height: 100%; 
     overflow-y: auto;
+}
+
+/* info-container 스크롤바 스타일링 */
+.info-container::-webkit-scrollbar {
+    width: 4px;
+}
+.info-container::-webkit-scrollbar-thumb {
+    background: rgba(180,180,180,0.3);
+    border-radius: 4px;
+}
+.info-container::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .stock-info {
@@ -528,22 +541,68 @@
 }
 
 .jembot-summary-item {
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-
-.jembot-summary-item-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #212529;
-    margin-bottom: 10px;
-}
-
-.jembot-summary-item-content {
     font-size: 14px;
     line-height: 1.6;
     color: #495057;
+}
+
+/* 마크다운 렌더링 스타일 */
+.jembot-summary-item h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #212529;
+    margin: 20px 0 15px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.jembot-summary-item h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #343a40;
+    margin: 18px 0 12px 0;
+    padding-bottom: 6px;
+}
+
+.jembot-summary-item h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
+    margin: 15px 0 10px 0;
+}
+
+.jembot-summary-item p {
+    margin: 30px 0;
+    text-align: justify;
+}
+
+.jembot-summary-item strong {
+    font-weight: 600;
+    color: #212529;
+}
+
+.jembot-summary-item em {
+    font-style: italic;
+    color: #6c757d;
+}
+
+.jembot-summary-item ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.jembot-summary-item li {
+    margin: 5px 0;
+    line-height: 1.5;
+}
+
+/* 섹션 구분 */
+.jembot-summary-item h2:first-child {
+    margin-top: 0;
+}
+
+.jembot-summary-item h3:first-child {
+    margin-top: 0;
 }
 
 .stock-price {
@@ -583,12 +642,9 @@
 }
 
 .detail-section h3 {
-    margin: 0 0 15px 0;
     font-size: 16px;
     font-weight: 600;
     color: #495057;
-    border-bottom: 2px solid #e9ecef;
-    padding-bottom: 8px;
 }
 
 .detail-grid {

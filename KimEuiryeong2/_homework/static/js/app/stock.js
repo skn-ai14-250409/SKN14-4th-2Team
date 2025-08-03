@@ -597,13 +597,49 @@ function showLoadingMessage() {
             return response.json();
           })
           .then((data) => {
-            rag_result.textContent = data['answer'] || "분석 결과가 없습니다.";
+            const markdownText = data['answer'] || "분석 결과가 없습니다.";
+            // 마크다운을 HTML로 변환
+            const htmlContent = convertMarkdownToHtml(markdownText);
+            rag_result.innerHTML = htmlContent;
           })
           .catch((error) => {
             console.error("에러 발생:", error);
             rag_result.textContent = "서버 오류가 발생했습니다. 다시 시도해주세요.";
           });
     };
+
+    // 마크다운을 HTML로 변환하는 함수
+    function convertMarkdownToHtml(markdown) {
+        if (!markdown) return '';
+        
+        let html = markdown
+            // 제목 변환
+            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+            
+            // 강조 변환
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            
+            // 리스트 변환
+            .replace(/^\d+\.\s+(.*$)/gim, '<li>$1</li>')
+            .replace(/^[-*]\s+(.*$)/gim, '<li>$1</li>')
+            
+            // 단락 변환
+            .replace(/\n\n/g, '</p><p>')
+            .replace(/^(?!<[h|u|o]|<li>)(.*$)/gim, '<p>$1</p>')
+            
+            // 리스트 래핑
+            .replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>')
+            
+            // 정리
+            .replace(/<p><\/p>/g, '')
+            .replace(/<p>(<h[1-3]>.*<\/h[1-3]>)<\/p>/g, '$1')
+            .replace(/<p>(<ul>.*<\/ul>)<\/p>/g, '$1');
+        
+        return html;
+    }
 
     function showRelatedStocks(relatedStocks) {
     const relatedStocksContainer = document.getElementById('relatedStocks');
