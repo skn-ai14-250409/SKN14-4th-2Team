@@ -74,17 +74,17 @@ WSGI_APPLICATION = "_homework.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'jembot',
-        'USER' : 'jembot', # django 로 해
-        'PASSWORD' : 'jembot', 
-        'HOST' : '127.0.0.1',
-        'PORT' : '3306',
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-        },
-    }
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'djangodb',
+#         'USER' : 'jembot', # django 로 해
+#         'PASSWORD' : 'jembot', 
+#         'HOST' : '127.0.0.1',
+#         'PORT' : '3306',
+#         'OPTIONS': {
+#             'charset': 'utf8mb4',
+#         },
+#     }
 }
 
 
