@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 각 페이지의 제목이 이 블록에 표시됩니다 -->
+    <title>{% block title %}Django 로그인 시스템{% endblock %}</title>
+    
+    <!-- 공통 CSS 파일들을 불러옵니다 -->
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    
+    <!-- 추가적인 CSS를 위한 블록 -->
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <main>
+        <!-- 각 페이지의 실제 내용이 이 블록에 채워집니다 -->
+        {% block content %}
+        {% endblock %}
+    </main>
+    
+    <!-- 공통 JavaScript 파일을 불러옵니다 -->
+    <script src="{% static 'js/home.js' %}"></script>
+    
+    <!-- 추가적인 JavaScript를 위한 블록 -->
+    {% block extra_script %}{% endblock %}
+</body>
+</html>
