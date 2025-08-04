@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}마이페이지{% endblock %}
+
+{% block content %}
+<div class="mypage-container">
+    <h1>마이페이지</h1>
+    <hr>
+    <div class="profile-section">
+        {% if user.profile_picture %}
+            <img src="{{ user.profile_picture.url }}" alt="프로필 사진" class="profile-pic">
+        {% else %}
+            <div class="profile-pic-default">
+                <span>사진 없음</span>
+            </div>
+        {% endif %}
+    </div>
+    <div class="info-section">
+        <p><strong>아이디(user_name):</strong> {% if user.username %}{{ user.username }} {% else %} {{user.email}} {% endif %}</p>
+        <p><strong>이름(name):</strong> {% if user.name %}{{ user.name }}{% elif user.last_name and user.first_name %}{{ user.last_name }}{{ user.first_name }}{% endif %}</p>        <p><strong>닉네임(nickname):</strong> {{ user.nickname }}</p>
+        <p><strong>이메일(email):</strong> {{ user.email }}</p>
+        <p><strong>가입일:</strong> {{ user.date_joined|date:"Y년 m월 d일" }}</p>
+    </div>
+    <div class="action-section">
+        <a href="{% url 'home' %}" class="btn-secondary">홈으로</a>
+        <!-- 로그아웃 버튼에 id를 부여합니다 -->
+        <a href="{% url 'account_logout' %}" id="logout-btn" class="btn-danger">로그아웃</a>
+    </div>
+</div>
+
+<!-- 로그아웃 POST 요청을 보내기 위한 숨겨진 폼 -->
+<form id="logout-form" action="{% url 'account_logout' %}" method="POST" style="display: none;">
+    {% csrf_token %}
+</form>
+{% endblock %}
+
+{% block extra_script %}
+<!-- 로그아웃 확인 창을 위한 JavaScript 코드 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(event) {
+            // a 태그의 기본 동작(페이지 이동)을 막습니다.
+            event.preventDefault(); 
+            
+            // 사용자에게 확인을 받습니다.
+            if (confirm('로그아웃 하시겠습니까?')) {
+                // '확인'을 누르면 숨겨진 폼을 전송하여 안전하게 로그아웃합니다.
+                document.getElementById('logout-form').submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
