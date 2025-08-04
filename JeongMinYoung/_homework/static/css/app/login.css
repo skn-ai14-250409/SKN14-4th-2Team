@@ -1,0 +1,208 @@
+/* 로그인 페이지 전용 스타일 */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-header h1 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.login-header p {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.login-options {
+    margin-bottom: 30px;
+}
+
+.google-login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px 24px;
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 50px;
+    color: #333;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.google-login-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.google-login-btn:hover::before {
+    left: 100%;
+}
+
+.google-login-btn:hover {
+    border-color: #4285F4;
+    box-shadow: 0 4px 8px rgba(66, 133, 244, 0.2);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: #333;
+}
+
+.google-login-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(66, 133, 244, 0.3);
+}
+
+.google-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.login-footer {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.login-footer a {
+    color: #4285F4;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+    color: #357ae8;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .login-container {
+        padding: 15px;
+    }
+    
+    .login-card {
+        padding: 30px 20px;
+        max-width: 100%;
+    }
+    
+    .login-header h1 {
+        font-size: 24px;
+    }
+    
+    .login-header p {
+        font-size: 14px;
+    }
+    
+    .google-login-btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+    
+    .google-icon {
+        width: 18px;
+        height: 18px;
+        margin-right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-card {
+        padding: 25px 15px;
+    }
+    
+    .login-header h1 {
+        font-size: 22px;
+    }
+    
+    .google-login-btn {
+        padding: 10px 16px;
+    }
+}
+
+/* 접근성 향상 */
+.google-login-btn:focus {
+    outline: 3px solid #4285F4;
+    outline-offset: 2px;
+}
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+    .login-container {
+        background: linear-gradient(135deg, #2d3561 0%, #4a3368 100%);
+    }
+    
+    .login-card {
+        background: #2a2a2a;
+        color: white;
+    }
+    
+    .login-header h1 {
+        color: white;
+    }
+    
+    .login-header p {
+        color: #ccc;
+    }
+    
+    .google-login-btn {
+        background: #3a3a3a;
+        border-color: #555;
+        color: white;
+    }
+    
+    .google-login-btn:hover {
+        background: #4a4a4a;
+        border-color: #4285F4;
+    }
+    
+    .login-footer {
+        color: #ccc;
+    }
+} 

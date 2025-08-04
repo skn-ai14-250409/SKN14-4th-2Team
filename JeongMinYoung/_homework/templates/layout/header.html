@@ -1,0 +1,37 @@
+{% load static %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/layout/header.css' %}">
+{% endblock head %}
+
+<div class="header">
+    <div class="header__logo">
+        <img src="{% static 'images/robot-icon.png' %}" alt="Robot Icon" class="header__logo-image" />
+        <div class="header__logo-name">JemBot</div>
+    </div>
+    
+    <!-- 주식 페이지에서만 표시되는 검색창 -->
+    <div class="header__search" id="headerSearch" style="display: none;">
+        <div class="header-search-container">
+            <input type="text" id="headerStockSearchInput" placeholder="회사명을 입력하세요 (예: 삼성전자, 네이버)" class="header-search-input">
+            <button id="headerStockSearchBtn" class="header-search-btn">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+        <div class="header-search-suggestions" id="headerSearchSuggestions" style="display: none;">
+            <div class="header-suggestions-title">혹시 이거 찾으세요?</div>
+            <div class="header-suggestions-list" id="headerSuggestionsList"></div>
+        </div>
+    </div>
+    
+    <div class="header__actions">
+        <div class="header__help">?</div>
+        {% if user.is_authenticated %}
+            <div class="header__user">
+                <span class="header__nickname">{{ user.name|default:user.username }}</span>
+                <a href="{% url 'app:logout' %}" class="header__logout">로그아웃</a>
+            </div>
+        {% else %}
+            <a href="{% url 'app:login' %}" class="header__login">Login</a>
+        {% endif %}
+    </div>
+</div>

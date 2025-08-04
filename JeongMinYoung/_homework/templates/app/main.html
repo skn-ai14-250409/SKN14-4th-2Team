@@ -1,0 +1,109 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "css/app/main.css" %}">
+    <link rel="stylesheet" href="{% static "css/app/chat.css" %}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+{% endblock head %}
+
+{% block title %}chatbot{% endblock title %}
+
+{% block content %}
+
+<div class="chat-container">
+    <div class="chat-list">
+        <div class="chat-list__add">
+            <div class="chat-list__name">대화 목록</div>
+            <div class="chat-add-button"><button id="new-chat-btn" type="button" class="btn btn-outline-secondary">+</button></div>
+        </div>
+        <div class="chat-list__item" id="chat-sessions-container">
+            <!-- 채팅 세션들이 동적으로 로드됩니다 -->
+        </div>
+
+
+        <div class='btn-group__container'>
+            <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+                <label class="btn btn-outline-primary" for="btnradio1">초급</label>
+
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                <label class="btn btn-outline-primary" for="btnradio2">중급</label>
+
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                <label class="btn btn-outline-primary" for="btnradio3">고급</label>
+            </div>
+        </div>
+    </div>
+    <div class="chat-window">
+        <div class="chat-messages" id="chat-messages">
+            <!-- 채팅 메시지들이 동적으로 로드됩니다 -->
+        </div>
+        <div class="chat-input__container">
+            <div class="chat-input">
+                <div class="chat-input__box">
+                    <input id="chat-input" type="text" placeholder="재무 데이터 rag에게 물어보기..." />
+                </div>
+                <div class="chat-search">
+                    <div class="chat-search-button">
+                        <button id="send-btn" type="button" class="btn btn-outline-secondary">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="additional_info">
+        <div class="choices">
+            <div class="stock">
+                <div class="stock-button"><button id="stock-button" type="button" class="btn btn-outline-secondary">주식</button></div>
+            </div>
+            <div class="news">
+                <div class="news-button"><button id="news-button" type="button" class="btn btn-outline-secondary">뉴스</button></div>
+            </div>
+        </div>
+        <div class="choices-info">
+            <div class="news-container" id="news-container">
+            </div>
+            <div class="stock-container" id="stock-container">
+            </div>
+        </div>
+        <div class="choices-input__container">
+            <div class="choices-input">
+                <div class="choices-input__box">
+                    <input type="text" placeholder="주식 검색" />
+                </div>
+                <div class="choices-search">
+                    <div class="choices-search-button">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    {% if user.is_authenticated %}
+        window.userInfo = {
+            id: {{ user.id }},
+            username: "{{ user.username|escapejs }}",
+            name: "{% if user.name %}{{ user.name|escapejs }}{% else %}{{ user.username|escapejs }}{% endif %}",
+            is_authenticated: true
+        };
+    {% else %}
+        window.userInfo = {
+            is_authenticated: false
+        };
+    {% endif %}
+</script>
+
+<script src="{% static 'js/app/chat.js' %}?v=1734742567"></script>
+{% endblock content %}
+
+<!-- Cache Buster:  -->
