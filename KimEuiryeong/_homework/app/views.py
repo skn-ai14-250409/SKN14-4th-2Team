@@ -7,10 +7,11 @@ import requests
 import os
 from bs4 import BeautifulSoup
 import yfinance as yf
-from pykrx import stock
+from pykrx import stock as pykrx_stock
 import pandas as pd
 from datetime import datetime, timedelta, timezone
 import numpy as np
+from .utils2.stock_node import handle_analysis_node
 
 # --- 별칭(Alias) 맵 ---
 # 자주 사용되는 한글/약칭을 공식 명칭으로 변환합니다.
@@ -25,12 +26,177 @@ STOCK_ALIASES = {
     "엘지에너지솔루션": "LG에너지솔루션",
 }
 
+def find_similar_companies(query, company_names, max_results=5):
+    """유사한 기업명을 찾습니다."""
+    query = query.lower().strip()
+    similar_companies = []
+    
+    for company in company_names:
+        company_lower = company.lower()
+        
+        # 정확한 일치
+        if query in company_lower or company_lower in query:
+            similar_companies.append(company)
+        # 부분 일치 (2글자 이상)
+        elif len(query) >= 2 and any(query[i:i+2] in company_lower for i in range(len(query)-1)):
+            similar_companies.append(company)
+        # 첫 글자 일치
+        elif query[0] == company_lower[0]:
+            similar_companies.append(company)
+        # 검색어로 시작하는 회사명
+        elif company_lower.startswith(query):
+            similar_companies.append(company)
+        # 검색어가 회사명에 포함된 경우
+        elif query in company_lower:
+            similar_companies.append(company)
+    
+    # 중복 제거 및 정렬
+    similar_companies = list(set(similar_companies))
+    similar_companies.sort()
+    
+    return similar_companies[:max_results]
+
+
+
+def get_popular_stocks():
+    """인기 검색 종목 데이터를 가져옵니다."""
+    try:
+        latest_day = pykrx_stock.get_nearest_business_day_in_a_week()
+        
+        # 인기 종목 리스트 (시가총액 상위 종목들)
+        popular_tickers = [
+            '005930',  # 삼성전자
+            '000660',  # SK하이닉스
+            '035420',  # NAVER
+            '051910',  # LG화학
+            '006400',  # 삼성SDI
+        ]
+        
+        popular_stocks = []
+        
+        for ticker in popular_tickers:
+            try:
+                # 주가 정보 가져오기 (최근 2일 데이터)
+                end_date = latest_day
+                start_date = latest_day - timedelta(days=5)  # 충분한 데이터 확보
+                price_info = pykrx_stock.get_market_ohlcv_by_date(start_date, end_date, ticker)
+                
+                if not price_info.empty and len(price_info) >= 2:
+                    company_name = pykrx_stock.get_market_ticker_name(ticker)
+                    
+                    # 현재가와 전일 종가
+                    current_price = price_info.iloc[-1]['종가']  # 최신 종가
+                    prev_price = price_info.iloc[-2]['종가']    # 전일 종가
+                    
+                    price_change = current_price - prev_price
+                    change_percent = (price_change / prev_price) * 100 if prev_price != 0 else 0
+                    
+                    popular_stocks.append({
+                        'name': company_name,
+                        'price': f"{current_price:,}",
+                        'change': f"{price_change:+,}",
+                        'changePercent': f"{change_percent:+.2f}%",
+                        'isPositive': price_change >= 0
+                    })
+                    
+                    print(f"인기 종목 {company_name}: 현재가 {current_price:,}, 변동 {price_change:+,} ({change_percent:+.2f}%)")
+                    
+            except Exception as e:
+                print(f"종목 {ticker} 정보 가져오기 오류: {e}")
+                continue
+        
+        print(f"인기 종목 {len(popular_stocks)}개 로드 완료")
+        return popular_stocks
+    except Exception as e:
+        print(f"인기 종목 데이터 가져오기 오류: {e}")
+        return []
+
+def get_related_stocks(company_name, code):
+    """관련 종목 데이터를 가져옵니다."""
+    try:
+        latest_day = pykrx_stock.get_nearest_business_day_in_a_week()
+        
+        # 회사 그룹별 관련 종목 매핑
+        company_groups = {
+            '삼성': ['005930', '006400', '000830', '207940', '068270'],  # 삼성전자, 삼성SDI, 삼성화재, 삼성바이오로직스, 셀트리온
+            'SK': ['000660', '017670', '096770', '326030', '011790'],   # SK하이닉스, SK텔레콤, SK이노베이션, SK바이오팜, SKC
+            'LG': ['051910', '373220', '066570', '051900', '034220'],   # LG화학, LG에너지솔루션, LG전자, LG생활건강, LG디스플레이
+            '현대': ['005380', '000270', '012330', '010620', '011200'], # 현대차, 기아, 현대모비스, 현대미포조선, 현대상선
+            '현대자동차': ['005380', '000270', '012330', '010620', '011200'], # 현대차, 기아, 현대모비스, 현대미포조선, 현대상선
+            '포스코': ['005490', '003670', '047050', '058430', '009520'], # POSCO홀딩스, 포스코퓨처엠, 포스코인터내셔널, 포스코케미칼, 포스코홀딩스
+            'NAVER': ['035420', '035720', '251270', '035600', '035000'], # NAVER, 카카오, 넷마블, SK이노베이션, 지투알
+            '카카오': ['035720', '035420', '251270', '035600', '035000'], # 카카오, NAVER, NAVER, 넷마블, SK이노베이션, 지투알
+        }
+        
+        # 회사명에서 그룹 찾기 (더 정확한 매칭)
+        found_group = None
+        print(f"관련 종목 검색: 회사명='{company_name}', 코드='{code}'")
+        for group_name, group_codes in company_groups.items():
+            if group_name in company_name or company_name in group_name:
+                found_group = group_codes
+                print(f"그룹 매칭 성공: '{group_name}' 그룹 찾음")
+                break
+        
+        if not found_group:
+            print(f"그룹 매칭 실패: '{company_name}'에 대한 그룹을 찾지 못함")
+        
+        if not found_group:
+            # 그룹이 없으면 같은 섹터의 다른 기업들 찾기
+            try:
+                # yfinance로 섹터 정보 가져오기
+                yahoo_code = f"{code}.KS" if code in pykrx_stock.get_market_ticker_list(date=latest_day, market="KOSPI") else f"{code}.KQ"
+                ticker = yf.Ticker(yahoo_code)
+                sector = ticker.info.get('sector', '')
+                
+                # 섹터별 관련 기업들
+                sector_companies = {
+                    'Technology': ['000660', '035420', '035720', '051910', '006400'],  # SK하이닉스, NAVER, 카카오, LG화학, 삼성SDI
+                    'Consumer Cyclical': ['005380', '000270', '051900', '017670'],      # 현대차, 기아, LG생활건강, SK텔레콤
+                    'Financial Services': ['207940', '000830', '012330'],               # 삼성화재, 삼성화재, 현대모비스
+                    'Healthcare': ['068270', '326030', '207940'],                       # 셀트리온, SK바이오팜, 삼성바이오로직스
+                }
+                
+                found_group = sector_companies.get(sector, [])  # 섹터가 없으면 빈 배열
+                
+            except Exception as e:
+                print(f"섹터 정보 가져오기 오류: {e}")
+                found_group = []  # 오류 시 빈 배열
+        
+        # 현재 종목 제외
+        if code in found_group:
+            found_group.remove(code)
+        
+        # 최대 5개까지만
+        related_stocks = []
+        for ticker_code in found_group[:5]:
+            try:
+                company_name = pykrx_stock.get_market_ticker_name(ticker_code)
+                yahoo_code = f"{ticker_code}.KS" if ticker_code in pykrx_stock.get_market_ticker_list(date=latest_day, market="KOSPI") else f"{ticker_code}.KQ"
+                
+                related_stocks.append({
+                    'name': company_name,
+                    'code': yahoo_code
+                })
+            except Exception as e:
+                print(f"관련 종목 {ticker_code} 정보 가져오기 오류: {e}")
+                continue
+        
+        print(f"관련 종목 {len(related_stocks)}개 로드 완료")
+        return related_stocks
+        
+    except Exception as e:
+        print(f"관련 종목 데이터 가져오기 오류: {e}")
+        return []
+
 # --- 네이버 API 키 설정 ---
 NAVER_CLIENT_ID = "_UjwRjk7ehd5FauRIy01" 
 NAVER_CLIENT_SECRET = "CZlqMZvTnM"
 
 def chatbot(request):
     return render(request, 'app/main.html')
+
+def stock(request):
+    return render(request, 'app/stock.html')
 
 def clean_html(html_string):
     """HTML 태그를 제거하고 텍스트만 반환합니다."""
@@ -119,11 +285,11 @@ def get_stock_info(request):
 
             # KRX 티커 정보 로드 및 캐싱 개선 (휴일/주말에도 안전하게)
             if 'krx_tickers' not in get_stock_info.__dict__:
-                latest_day_for_map = stock.get_nearest_business_day_in_a_week()
-                kospi = stock.get_market_ticker_list(date=latest_day_for_map, market="KOSPI")
-                kosdaq = stock.get_market_ticker_list(date=latest_day_for_map, market="KOSDAQ")
+                latest_day_for_map = pykrx_stock.get_nearest_business_day_in_a_week()
+                kospi = pykrx_stock.get_market_ticker_list(date=latest_day_for_map, market="KOSPI")
+                kosdaq = pykrx_stock.get_market_ticker_list(date=latest_day_for_map, market="KOSDAQ")
                 tickers = kospi + kosdaq
-                name_to_code = {stock.get_market_ticker_name(ticker): ticker for ticker in tickers}
+                name_to_code = {pykrx_stock.get_market_ticker_name(ticker): ticker for ticker in tickers}
                 get_stock_info.krx_tickers = name_to_code
                 print(f"KRX 티커 정보 로드 완료. ({len(tickers)}개 종목)")
 
@@ -145,20 +311,22 @@ def get_stock_info(request):
                     break
             
             if not found_code:
-                # 3. 일치하는 항목이 없으면, 제안 찾기 (부분 일치)
-                similar_names = [name for name in name_to_code.keys() if company_name in name]
-                if similar_names:
-                    error_message = f"정확한 기업명을 입력해주세요. \n                     혹시 이거 찾으세요?: {', '.join(similar_names[:3])}"
+                # 3. 일치하는 항목이 없으면, 유사한 기업명 찾기
+                print(f"검색어 '{company_name}'에 대한 정확한 일치를 찾지 못함")
+                similar_companies = find_similar_companies(company_name, name_to_code.keys())
+                print(f"유사한 기업명 {len(similar_companies)}개 발견: {similar_companies}")
+                if similar_companies:
+                    error_message = f"정확한 기업명을 입력해주세요.\n혹시 이거 찾으세요?: {', '.join(similar_companies)}"
                 else:
                     error_message = "해당 기업명은 상장기업이 아닙니다."
-                return JsonResponse({"success": False, "error": error_message})
+                return JsonResponse({"success": False, "error": error_message, "suggestions": similar_companies})
             
             code = found_code
             company_name = found_name # 공식 명칭으로 업데이트
             
             # yfinance Ticker 객체 생성
-            latest_day = stock.get_nearest_business_day_in_a_week()
-            kospi_tickers = stock.get_market_ticker_list(date=latest_day, market="KOSPI")
+            latest_day = pykrx_stock.get_nearest_business_day_in_a_week()
+            kospi_tickers = pykrx_stock.get_market_ticker_list(date=latest_day, market="KOSPI")
             
             is_kospi = code in kospi_tickers
             yahoo_code = f"{code}.KS" if is_kospi else f"{code}.KQ"
@@ -198,15 +366,58 @@ def get_stock_info(request):
             # --- 차트용 데이터 (기간에 맞게 조회) ---
             if period == '1d':
                 chart_df = yf.download(yahoo_code, period="1d", interval="15m", progress=False, auto_adjust=True)
-                chart_df.index = chart_df.index.strftime('%H:%M')
+                # 한국 시간대로 변환하고 더 읽기 쉬운 형식으로 표시
+                try:
+                    chart_df.index = chart_df.index.tz_convert('Asia/Seoul').strftime('%H:%M')
+                except:
+                    chart_df.index = chart_df.index.strftime('%H:%M')
+            elif period == '1w':
+                chart_df = yf.download(yahoo_code, period="5d", interval="1h", progress=False, auto_adjust=True)
+                # 한국 시간대로 변환
+                try:
+                    chart_df.index = chart_df.index.tz_convert('Asia/Seoul').strftime('%m-%d %H:%M')
+                except:
+                    chart_df.index = chart_df.index.strftime('%m-%d %H:%M')
+            elif period == '1m':
+                chart_df = yf.download(yahoo_code, period="1mo", interval="1d", progress=False, auto_adjust=True)
+                chart_df.index = chart_df.index.strftime('%m-%d')
+            elif period == '3m':
+                chart_df = yf.download(yahoo_code, period="3mo", interval="1d", progress=False, auto_adjust=True)
+                chart_df.index = chart_df.index.strftime('%m-%d')
+            elif period == '6m':
+                try:
+                    chart_df = yf.download(yahoo_code, period="6mo", interval="1d", progress=False, auto_adjust=True)
+                    if chart_df.empty:
+                        print(f"6개월 데이터가 비어있음: {yahoo_code}")
+                        # 3개월 데이터로 대체
+                        chart_df = yf.download(yahoo_code, period="3mo", interval="1d", progress=False, auto_adjust=True)
+                    chart_df.index = chart_df.index.strftime('%m-%d')
+                except Exception as e:
+                    print(f"6개월 데이터 가져오기 오류: {e}")
+                    # 3개월 데이터로 대체
+                    chart_df = yf.download(yahoo_code, period="3mo", interval="1d", progress=False, auto_adjust=True)
+                    chart_df.index = chart_df.index.strftime('%m-%d')
+            elif period == '1y':
+                chart_df = yf.download(yahoo_code, period="1y", interval="1d", progress=False, auto_adjust=True)
+                chart_df.index = chart_df.index.strftime('%m-%d')
+            elif period == '5y':
+                chart_df = yf.download(yahoo_code, period="5y", interval="1wk", progress=False, auto_adjust=True)
+                chart_df.index = chart_df.index.strftime('%Y-%m')
+            elif period == 'max':
+                chart_df = yf.download(yahoo_code, period="max", interval="1mo", progress=False, auto_adjust=True)
+                chart_df.index = chart_df.index.strftime('%Y-%m')
             else:
-                period_map = {'1w': 7, '1m': 30, '1y': 365} # 3m 제거
-                start_date = today - timedelta(days=period_map.get(period, 30)) # 기본값 30일로 변경
-                # history_df에서 해당 기간만큼 잘라내서 사용
-                chart_df = history_df[history_df.index >= pd.to_datetime(start_date)]
+                # 기본값: 1개월
+                chart_df = yf.download(yahoo_code, period="1mo", interval="1d", progress=False, auto_adjust=True)
                 chart_df.index = chart_df.index.strftime('%m-%d')
             
             chart_df = chart_df.reset_index()
+            
+            # 차트 데이터가 비어있는지 확인
+            if chart_df.empty:
+                print(f"차트 데이터가 비어있음: {yahoo_code}, 기간: {period}")
+                return JsonResponse({"success": False, "error": "해당 기간의 차트 데이터를 가져올 수 없습니다."})
+            
             chart_close_series = chart_df['Close'].iloc[:, 0] if isinstance(chart_df['Close'], pd.DataFrame) else chart_df['Close']
             
             # --- 데이터 값 안전하게 가져오기 (휴일/주말 고려) ---
@@ -230,6 +441,50 @@ def get_stock_info(request):
                 dividend_yield = info.get('dividendYield')
                 pbr_value = f"{dividend_yield * 100:.2f}%" if dividend_yield is not None else None
 
+            # --- 추가 주식 정보 계산 ---
+            # 52주 변동률
+            fifty_two_week_change = ((latest_price_val - fifty_two_week_low) / fifty_two_week_low) * 100 if fifty_two_week_low != 0 else 0
+            
+            # 거래대금 (거래량 * 현재가)
+            trading_value = volume_val * latest_price_val if isinstance(volume_val, (int, float)) else 0
+            
+            # 베타 (시장 대비 변동성)
+            beta = info.get('beta', 'N/A')
+            
+            # ROE (자기자본이익률)
+            roe = info.get('returnOnEquity')
+            roe_value = f"{roe * 100:.2f}%" if roe is not None else "N/A"
+            
+            # ROA (총자산이익률)
+            roa = info.get('returnOnAssets')
+            roa_value = f"{roa * 100:.2f}%" if roa is not None else "N/A"
+            
+            # 부채비율
+            debt_to_equity = info.get('debtToEquity')
+            debt_ratio = f"{debt_to_equity:.2f}" if debt_to_equity is not None else "N/A"
+            
+            # 유동비율
+            current_ratio = info.get('currentRatio')
+            current_ratio_value = f"{current_ratio:.2f}" if current_ratio is not None else "N/A"
+            
+            # 배당성향
+            payout_ratio = info.get('payoutRatio')
+            payout_ratio_value = f"{payout_ratio * 100:.2f}%" if payout_ratio is not None else "N/A"
+
+
+
+            # --- 인기 종목 정보 추가 ---
+            popular_stocks_data = get_popular_stocks()
+            print(f"인기 종목 데이터: {len(popular_stocks_data)}개")
+            for stock in popular_stocks_data:
+                print(f"  - {stock['name']}: {stock['price']} ({stock['change']})")
+
+            # --- 관련 종목 정보 추가 ---
+            related_stocks_data = get_related_stocks(company_name, code)
+            print(f"관련 종목 데이터: {len(related_stocks_data)}개")
+            for stock in related_stocks_data:
+                print(f"  - {stock['name']}: {stock['code']}")
+
             response_data = {
                 'success': True,
                 'companyName': info.get('shortName', company_name),
@@ -251,6 +506,31 @@ def get_stock_info(request):
 
                 'dayHigh': f"₩{day_high_val:,.0f}",
                 'dayLow': f"₩{day_low_val:,.0f}",
+                
+                # 추가 정보
+                'sector': info.get('sector', 'N/A'),
+                'industry': info.get('industry', 'N/A'),
+                'employees': f"{info.get('fullTimeEmployees', 0):,}" if info.get('fullTimeEmployees') else "N/A",
+                'website': info.get('website', 'N/A'),
+                'description': info.get('longBusinessSummary', 'N/A'),
+                
+                # 추가 주식 정보
+                'fiftyTwoWeekChange': f"{fifty_two_week_change:+.2f}%",
+                'tradingValue': f"₩{trading_value:,.0f}" if trading_value > 0 else "N/A",
+                'beta': beta,
+                'roe': roe_value,
+                'roa': roa_value,
+                'debtRatio': debt_ratio,
+                'currentRatio': current_ratio_value,
+                'payoutRatio': payout_ratio_value,
+                
+
+                
+                # 인기 종목 정보
+                'popular_stocks': popular_stocks_data,
+                
+                # 관련 종목 정보
+                'relatedStocks': related_stocks_data,
                 
                 'chartData': {
                     'labels': chart_df.iloc[:, 0].tolist(),
@@ -344,3 +624,16 @@ def crawl_naver_news(request):
             return JsonResponse({'success': False, 'error': str(e)})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+def get_stock_rag(request):
+    data = json.loads(request.body.decode('utf-8'))
+    print(f'{data["title"]=}')
+
+    company_name = data["title"]  # 삼성전자
+
+    answer = handle_analysis_node(company_name)
+
+    return JsonResponse({
+        'answer': answer
+    })

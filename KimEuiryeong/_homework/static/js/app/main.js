@@ -53,7 +53,7 @@ const sideButtonHandler = () => {
 const searchNews = async (query) => {
     console.log('검색 시작:', query);
     try {
-        const response = await fetch('/main/api/crawl-news/', {
+        const response = await fetch('/jembot/api/crawl-news/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -155,7 +155,7 @@ const searchStock = async (query, period = '1m') => { // 기본 기간 파라미
     stockContainer.innerHTML = `<div class="stock-placeholder"><i class="bi bi-hourglass-split"></i><div>데이터를 불러오는 중...</div></div>`;
 
     try {
-        const response = await fetch('/main/api/get-stock-info/', {
+        const response = await fetch('/jembot/api/get-stock-info/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -378,7 +378,7 @@ const displayStockInfo = (data) => {
 const updateStockChart = async (query, period) => {
     console.log(`차트 업데이트 요청: ${query}, 기간: ${period}`);
     try {
-        const response = await fetch('/main/api/get-stock-info/', {
+        const response = await fetch('/jembot/api/get-stock-info/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
             body: JSON.stringify({ query: query, period: period })

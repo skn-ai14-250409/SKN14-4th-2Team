@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI 챗봇 웹</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+  <div id="container">
+    <!-- 왼쪽: 대화 목록 -->
+    <aside id="sidebar">
+      <h3>대화 목록</h3>
+      <ul id="chatList">
+        <li class="active">
+          2025/07/28<br />
+          <span>오후 02:37</span>
+        </li>
+        <li>
+          2025/07/27<br />
+          <span>오전 09:05</span>
+        </li>
+      </ul>
+      <button id="deleteBtn">대화 삭제</button>
+    </aside>
+
+    <!-- 가운데: 챗봇, 난이도 선택 -->
+    <main id="chatArea">
+      <header>
+        <h2>2025/07/28 대화</h2>
+        <div id="levelSelect" role="radiogroup" aria-label="챗봇 난이도 선택">
+          <input type="radio" id="easy" name="level" value="easy" checked />
+          <label for="easy">초급</label>
+
+          <input type="radio" id="mid" name="level" value="mid" />
+          <label for="mid">중급</label>
+
+          <input type="radio" id="high" name="level" value="high" />
+          <label for="high">고급</label>
+        </div>
+      </header>
+      <div id="messages" aria-live="polite" aria-relevant="additions">
+        <!-- 대화 내용 출력 -->
+      </div>
+      <div id="inputArea">
+        <input
+          type="text"
+          id="userInput"
+          placeholder="메시지를 입력하세요..."
+          autocomplete="off"
+          aria-label="메시지 입력창"
+        />
+        <button id="sendBtn" aria-label="메시지 보내기">보내기</button>
+      </div>
+    </main>
+
+    <!-- 오른쪽: 뉴스/주식/검색창 -->
+    <aside id="infoPanel">
+      <nav role="tablist" aria-label="뉴스 및 주식 탭">
+        <button class="tab active" data-tab="news" role="tab" aria-selected="true">뉴스</button>
+        <button class="tab" data-tab="stock" role="tab" aria-selected="false">주식</button>
+      </nav>
+      <div id="searchBox">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="뉴스 검색어 입력"
+          aria-label="뉴스 검색어 입력창"
+        />
+        <button id="searchBtn" aria-label="검색">검색</button>
+      </div>
+      <div id="infoContent" tabindex="0">
+        <!-- 뉴스 또는 주식 정보 -->
+      </div>
+    </aside>
+  </div>
+  <script src="{% static 'js/chatbot.js' %}"></script>
+</body>
+</html>

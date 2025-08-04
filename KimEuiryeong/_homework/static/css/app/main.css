@@ -4,7 +4,7 @@
     --chat-user__content-color: rgb(0, 122, 255);
     --chat__time-color: rgb(137, 137, 137);
     /* --action-btn-color: rgb(0, 69, 143); */
-    --action-btn-color: rgb(195, 210, 237);
+    --action-btn-color: rgb(219, 228, 244);
     --action-btn-font-color: rgb(0, 69, 143);
     --level-button-color: rgb(195, 210, 237);
 }
@@ -321,9 +321,10 @@
 
 /* ㅡㅡㅡㅡ 뉴스 css ㅡㅡㅡㅡ */
 
-/* .news-container {
-    display : none;
-} */
+.news-container {
+    /* display : none; */
+    height : 100%;
+}
 
 .news-box {
     padding : 10px 0px;

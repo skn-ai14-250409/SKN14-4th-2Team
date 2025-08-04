@@ -15,7 +15,7 @@ from pykrx import stock
 import pandas as pd
 import numpy as np
 
-from .models import Custom_user, Nickname, ChatSession, ChatMessage, Stock, StockReview
+from .models import CustomUser, ChatSession, ChatMessage, Stock, StockReview
 from .utils2.main import run_langraph
 from .utils2.stock_node import handle_analysis_node
 
@@ -143,11 +143,11 @@ def chat_api(request):
         # 세션 ID가 없으면 새로 생성
         if not session_id:
             session_id = str(uuid.uuid4())
-            # 새 세션 생성
+            # 새 세션 생성 (기본 제목으로)
             chat_session = ChatSession.objects.create(
                 user=request.user,
                 session_id=session_id,
-                title=user_message[:50] + "..." if len(user_message) > 50 else user_message
+                title="새로운 대화"
             )
         else:
             # 기존 세션 가져오기
@@ -156,11 +156,23 @@ def chat_api(request):
             except ChatSession.DoesNotExist:
                 return JsonResponse({'error': '세션을 찾을 수 없습니다.'}, status=404)
         
+        # 첫 번째 메시지 체크
+        is_first_message = chat_session.messages.count() == 0
+        updated_title = None
+        
+        # 첫 번째 메시지인 경우 세션 제목 업데이트
+        if is_first_message:
+            first_line = user_message.split('\n')[0]
+            updated_title = first_line[:50] + "..." if len(first_line) > 50 else first_line
+            chat_session.title = updated_title
+            chat_session.save()
+        
         # 사용자 메시지 저장
         ChatMessage.objects.create(
             session=chat_session,
             message_type='user',
-            content=user_message
+            content=user_message,
+            level=level.upper()
         )
         
         # DB에서 채팅 히스토리 가져오기 (최근 20개 메시지만)
@@ -189,7 +201,8 @@ def chat_api(request):
         ChatMessage.objects.create(
             session=chat_session,
             message_type='bot',
-            content=bot_message
+            content=bot_message,
+            level=level.upper()
         )
         
         # 세션 업데이트 시간 갱신
@@ -198,14 +211,21 @@ def chat_api(request):
         # 현재 시간
         current_time = datetime.now().strftime("%H:%M")
         
-        return JsonResponse({
+        response_data = {
             'success': True,
             'bot_message': bot_message,
             'timestamp': current_time,
             'level': level,
             'session_id': session_id,  # 세션 ID 반환,
             'user': user_to_dict(request.user)
-        })
+        }
+        
+        # 첫 번째 메시지인 경우 업데이트된 타이틀 정보 추가
+        if is_first_message and updated_title:
+            response_data['updated_title'] = updated_title
+            response_data['is_first_message'] = True
+        
+        return JsonResponse(response_data)
         
     except Exception as e:
         return JsonResponse({
@@ -223,11 +243,15 @@ def get_chat_history(request, session_id):
         
         history = []
         for msg in messages:
-            history.append({
+            message_data = {
                 'type': msg.message_type,
                 'content': msg.content,
                 'timestamp': msg.timestamp.strftime('%H:%M')
-            })
+            }
+            # 봇 메시지인 경우 level 정보 추가
+            if msg.message_type == 'bot':
+                message_data['level'] = msg.level.lower() if msg.level else 'basic'
+            history.append(message_data)
         
         return JsonResponse({
             'success': True,
