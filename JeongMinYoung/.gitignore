@@ -1,0 +1,10 @@
+# faiss index folders
+**/faiss_index3/
+**/faiss_index_bge_m3/
+
+# env files
+.env
+
+# python cache
+__pycache__/
+*.py[cod]
