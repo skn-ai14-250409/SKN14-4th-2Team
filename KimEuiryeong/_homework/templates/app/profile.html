@@ -1,0 +1,403 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}마이페이지{% endblock %}
+
+{% block head %}
+<!-- CSRF 토큰을 위한 메타 태그 -->
+<meta name="csrf-token" content="{{ csrf_token }}">
+{% endblock %}
+
+{% block content %}
+<div class="mypage-container">
+    <div class="content-wrapper">
+        <div class="profile-info-section">
+            <h1>마이페이지</h1>
+            <div class="profile-header">
+                <div class="profile-pic-container">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="프로필 사진" class="profile-pic">
+                    {% else %}
+                        <div class="profile-pic-default">
+                            <span>사진 없음</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="user-basic-info">
+                    <h2>{{ user.name }}님</h2>
+                    <p class="user-email">{{ user.email }}</p>
+                </div>
+            </div>
+            <div class="user-details">
+                <p><strong>아이디(user_name):</strong> {% if user.username %}{{ user.username }} {% else %} {{user.email}} {% endif %}</p>
+                <p><strong>이름(name):</strong> {% if user.name %}{{ user.name }}{% elif user.last_name and user.first_name %}{{ user.last_name }}{{ user.first_name }}{% endif %}</p>        
+                <p><strong>닉네임(nickname):</strong> {{ user.nickname }}</p>
+                <p><strong>이메일(email):</strong> {{ user.email }}</p>
+                <p><strong>가입일:</strong> {{ user.date_joined|date:"Y년 m월 d일" }}</p>
+            </div>
+        </div>
+        <div class="account-management">
+            <h3>계정 관리</h3>
+            <div class="management-links">
+                <div class="management-item" id="emailItem">
+                    <div class="management-link" onclick="toggleEmailEdit()">
+                        <i class="bi bi-envelope"></i>
+                        <span>이메일 변경</span>
+                    </div>
+                    <div class="inline-edit" id="emailInlineEdit" style="display: none;">
+                        <input type="email" id="newEmail" placeholder="새 이메일 주소" class="inline-input">
+                        <div class="error-message" id="emailError" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="management-item" id="passwordItem">
+                    <div class="management-link" onclick="togglePasswordEdit()">
+                        <i class="bi bi-lock"></i>
+                        <span>비밀번호 변경</span>
+                    </div>
+                    <div class="inline-edit" id="passwordInlineEdit" style="display: none;">
+                        <input type="password" id="newPassword" placeholder="새 비밀번호" class="inline-input">
+                        <input type="password" id="confirmPassword" placeholder="비밀번호 확인" class="inline-input">
+                        <div class="error-message" id="passwordError" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="management-item" id="nicknameItem">
+                    <div class="management-link" onclick="toggleNicknameEdit()">
+                        <i class="bi bi-person-badge"></i>
+                        <span>닉네임 변경</span>
+                    </div>
+                    <div class="inline-edit" id="nicknameInlineEdit" style="display: none;">
+                        <input type="text" id="newNickname" placeholder="새 닉네임" class="inline-input">
+                        <div class="error-message" id="nicknameError" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <a href="{% url 'socialaccount_connections' %}" class="management-link">
+                    <i class="bi bi-link-45deg"></i>
+                    <span>계정 연결</span>
+                </a>
+            </div>
+            
+            <!-- 저장/취소 버튼을 맨 아래에 배치 -->
+            <div class="edit-actions" id="editActions" style="display: none;">
+                <button onclick="saveCurrentEdit()" class="btn-save">저장</button>
+                <button onclick="cancelCurrentEdit()" class="btn-cancel">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-section">
+        <a href="{% url 'home' %}" class="btn-secondary">홈으로</a>
+        <!-- 로그아웃 버튼에 id를 부여합니다 -->
+        <a href="{% url 'account_logout' %}" id="logout-btn" class="btn-danger">로그아웃</a>
+    </div>
+</div>
+
+<!-- 로그아웃 POST 요청을 보내기 위한 숨겨진 폼 -->
+<form id="logout-form" action="{% url 'account_logout' %}" method="POST" style="display: none;">
+    {% csrf_token %}
+</form>
+{% endblock %}
+
+{% block script %}
+<!-- 로그아웃 확인 창을 위한 JavaScript 코드 -->
+<script>
+// 전역 변수로 현재 편집 중인 항목 추적
+let currentEditingType = null;
+
+// 이메일 편집 토글
+function toggleEmailEdit() {
+    if (currentEditingType && currentEditingType !== 'email') {
+        cancelCurrentEdit();
+    }
+    
+    if (currentEditingType === 'email') {
+        cancelCurrentEdit();
+        return;
+    }
+    
+    currentEditingType = 'email';
+    showEditMode('emailItem', 'emailInlineEdit', 'newEmail');
+}
+
+// 비밀번호 편집 토글
+function togglePasswordEdit() {
+    if (currentEditingType && currentEditingType !== 'password') {
+        cancelCurrentEdit();
+    }
+    
+    if (currentEditingType === 'password') {
+        cancelCurrentEdit();
+        return;
+    }
+    
+    currentEditingType = 'password';
+    showEditMode('passwordItem', 'passwordInlineEdit', 'newPassword');
+}
+
+// 닉네임 편집 토글
+function toggleNicknameEdit() {
+    if (currentEditingType && currentEditingType !== 'nickname') {
+        cancelCurrentEdit();
+    }
+    
+    if (currentEditingType === 'nickname') {
+        cancelCurrentEdit();
+        return;
+    }
+    
+    currentEditingType = 'nickname';
+    showEditMode('nicknameItem', 'nicknameInlineEdit', 'newNickname');
+}
+
+// 편집 모드 표시
+function showEditMode(itemId, editId, focusInputId) {
+    // 해당 아이템에 편집 클래스 추가
+    const item = document.getElementById(itemId);
+    item.classList.add('editing');
+    
+    // 인라인 편집 영역 표시
+    const editArea = document.getElementById(editId);
+    editArea.style.display = 'block';
+    setTimeout(() => editArea.classList.add('show'), 10);
+    
+    // 저장/취소 버튼 표시
+    const editActions = document.getElementById('editActions');
+    editActions.style.display = 'block';
+    setTimeout(() => editActions.classList.add('show'), 10);
+    
+    // 포커스
+    setTimeout(() => {
+        document.getElementById(focusInputId).focus();
+    }, 100);
+}
+
+// 현재 편집 취소
+function cancelCurrentEdit() {
+    if (!currentEditingType) return;
+    
+    // 모든 편집 상태 제거
+    document.querySelectorAll('.management-item').forEach(item => {
+        item.classList.remove('editing');
+    });
+    
+    // 모든 인라인 편집 영역 숨김
+    document.querySelectorAll('.inline-edit').forEach(edit => {
+        edit.classList.remove('show');
+        setTimeout(() => edit.style.display = 'none', 300);
+    });
+    
+    // 저장/취소 버튼 숨김
+    const editActions = document.getElementById('editActions');
+    editActions.classList.remove('show');
+    setTimeout(() => editActions.style.display = 'none', 300);
+    
+    // 입력값 및 에러 메시지 초기화
+    clearAllInputsAndErrors();
+    
+    currentEditingType = null;
+}
+
+// 모든 입력값과 에러 메시지 초기화
+function clearAllInputsAndErrors() {
+    // 입력값 초기화
+    document.getElementById('newEmail').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+    document.getElementById('newNickname').value = '';
+    
+    // 에러 메시지 숨김
+    document.getElementById('emailError').style.display = 'none';
+    document.getElementById('passwordError').style.display = 'none';
+    document.getElementById('nicknameError').style.display = 'none';
+}
+
+// 현재 편집 저장
+function saveCurrentEdit() {
+    if (!currentEditingType) return;
+    
+    switch (currentEditingType) {
+        case 'email':
+            saveEmail();
+            break;
+        case 'password':
+            savePassword();
+            break;
+        case 'nickname':
+            saveNickname();
+            break;
+    }
+}
+
+// 이메일 저장
+function saveEmail() {
+    const newEmail = document.getElementById('newEmail').value;
+    const errorDiv = document.getElementById('emailError');
+    
+    if (!newEmail) {
+        showError('emailError', '이메일 주소를 입력해주세요.');
+        return;
+    }
+    
+    if (!isValidEmail(newEmail)) {
+        showError('emailError', '유효한 이메일 주소를 입력해주세요.');
+        return;
+    }
+    
+    // AJAX 요청으로 이메일 변경
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') 
+        ? document.querySelector('[name=csrfmiddlewaretoken]').value 
+        : document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+    fetch('/accounts/update-email/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ email: newEmail })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 편집 모드 종료
+            cancelCurrentEdit();
+            // 페이지의 이메일 표시 업데이트
+            location.reload(); // 간단하게 페이지 새로고침
+        } else {
+            showError('emailError', data.error || '이미 사용 중인 이메일입니다.');
+        }
+    })
+    .catch(error => {
+        showError('emailError', '오류가 발생했습니다. 다시 시도해주세요.');
+    });
+}
+
+// 비밀번호 저장
+function savePassword() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const errorDiv = document.getElementById('passwordError');
+    
+    if (!newPassword || !confirmPassword) {
+        showError('passwordError', '모든 필드를 입력해주세요.');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showError('passwordError', '비밀번호가 일치하지 않습니다.');
+        return;
+    }
+    
+    if (newPassword.length < 8) {
+        showError('passwordError', '비밀번호는 8자 이상이어야 합니다.');
+        return;
+    }
+    
+    // AJAX 요청으로 비밀번호 변경
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') 
+        ? document.querySelector('[name=csrfmiddlewaretoken]').value 
+        : document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+    fetch('/accounts/update-password/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ password: newPassword })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('비밀번호가 성공적으로 변경되었습니다.');
+            cancelCurrentEdit();
+        } else {
+            showError('passwordError', data.error || '비밀번호 변경에 실패했습니다.');
+        }
+    })
+    .catch(error => {
+        showError('passwordError', '오류가 발생했습니다. 다시 시도해주세요.');
+    });
+}
+
+// 닉네임 저장
+function saveNickname() {
+    const newNickname = document.getElementById('newNickname').value;
+    const errorDiv = document.getElementById('nicknameError');
+    
+    if (!newNickname) {
+        showError('nicknameError', '닉네임을 입력해주세요.');
+        return;
+    }
+    
+    if (newNickname.length < 2) {
+        showError('nicknameError', '닉네임은 2자 이상이어야 합니다.');
+        return;
+    }
+    
+    if (newNickname.length > 20) {
+        showError('nicknameError', '닉네임은 20자 이하여야 합니다.');
+        return;
+    }
+    
+    // AJAX 요청으로 닉네임 변경
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') 
+        ? document.querySelector('[name=csrfmiddlewaretoken]').value 
+        : document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+    fetch('/accounts/update-nickname/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ nickname: newNickname })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 편집 모드 종료
+            cancelCurrentEdit();
+            // 페이지의 닉네임 표시 업데이트
+            location.reload(); // 간단하게 페이지 새로고침
+        } else {
+            showError('nicknameError', data.error || '이미 사용 중인 닉네임입니다.');
+        }
+    })
+    .catch(error => {
+        showError('nicknameError', '오류가 발생했습니다. 다시 시도해주세요.');
+    });
+}
+
+// 유틸리티 함수들
+function showError(elementId, message) {
+    const errorDiv = document.getElementById(elementId);
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+}
+
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+// 페이지 로드 후 로그아웃 이벤트 리스너 등록
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(event) {
+            // a 태그의 기본 동작(페이지 이동)을 막습니다.
+            event.preventDefault(); 
+            
+            // 사용자에게 확인을 받습니다.
+            if (confirm('로그아웃 하시겠습니까?')) {
+                // '확인'을 누르면 숨겨진 폼을 전송하여 안전하게 로그아웃합니다.
+                document.getElementById('logout-form').submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

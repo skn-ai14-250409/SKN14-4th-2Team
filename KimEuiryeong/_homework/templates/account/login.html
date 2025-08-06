@@ -1,0 +1,53 @@
+{% extends "layout/signup.html" %}
+{% load static %}
+{% load socialaccount %}
+
+{% block title %}로그인{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-form">
+        <h2>로그인</h2>
+        <form method="POST" action="{% url 'account_login' %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_login">이메일</label>
+                {{ form.login }}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password">비밀번호</label>
+                {{ form.password }}
+            </div>
+
+            {% if form.errors %}
+            <div class="error-message">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <button type="submit" class="btn-submit">로그인</button>
+        </form>
+
+        <div class="form-switch">
+            <p>계정이 없으신가요? <a href="{% url 'accounts:signup' %}">회원가입</a></p>
+        </div>
+
+        <hr class="divider">
+
+        <div class="social-login">
+            <p>소셜 계정으로 로그인</p>
+            <div class="login_box">
+                <a href="{% provider_login_url 'google' %}"><img src="{% static 'images/google_icon.svg' %}" alt="Google 로그인"></a>
+                <a href="{% provider_login_url 'naver' %}"><img src="{% static 'images/naver_icon.png' %}" alt="Naver 로그인"></a>
+                <a href="{% provider_login_url 'kakao' %}"><img src="{% static 'images/kakao_icon.png' %}" alt="Kakao 로그인"></a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
