@@ -181,6 +181,17 @@ const searchStock = async (query, period = '1m') => { // 기본 기간 파라미
         if (data.success) {
             currentStockQuery = query; // 검색 성공 시, 원본 검색어를 저장
             displayStockInfo(data);
+            
+            // 주식 검색 완료 이벤트 발생 (댓글 시스템에 알림)
+            console.log('main.js: 주식 검색 성공, 댓글 시스템에 알림 시작');
+            if (typeof window.onStockSearchCompleted === 'function') {
+                // data.code에서 .KS나 .KQ 제거하여 KRX 코드만 추출
+                const stockCode = data.code.replace(/\.(KS|KQ)$/, '');
+                console.log('main.js: 추출된 주식 코드:', stockCode, '원본:', data.code);
+                window.onStockSearchCompleted(stockCode);
+            } else {
+                console.log('main.js: onStockSearchCompleted 함수를 찾을 수 없음');
+            }
         } else {
             // 오류 메시지의 \n을 <br> 태그로 변환하여 줄바꿈을 적용합니다.
             const errorMessage = data.error.replace(/\\n/g, '<br>');
@@ -590,10 +601,25 @@ const initializeChatbot = () => {
         const loadingId = addLoadingMessage();
         
         try {
+            // 선택된 레벨 확인
+            const activeButton = document.querySelector('.btn-group .btn-check:checked + .btn');
+            let selectedLevel = 'BASIC'; // 기본값
+            if (activeButton) {
+                const buttonText = activeButton.textContent.trim();
+                if (buttonText === '초급') {
+                    selectedLevel = 'BASIC';
+                } else if (buttonText === '중급') {
+                    selectedLevel = 'INTERMEDIATE';
+                } else if (buttonText === '고급') {
+                    selectedLevel = 'ADVANCED';
+                }
+            }
+
             const requestBody = {
                 message: message,
                 session_id: currentSessionId,
-                is_new_session: isNewSession
+                is_new_session: isNewSession,
+                level: selectedLevel
             };
 
             const response = await fetch('/jembot/api/chat/', {
@@ -666,6 +692,31 @@ const initializeChatbot = () => {
             } else if (buttonText === '고급') {
                 levelMark = '<div class="advanced_answer__mark">고급</div>';
             }
+        }
+        
+        messageDiv.innerHTML = `
+            ${levelMark}
+            <div class="chat-bot__content">${message}</div>
+            <div class="chat-bot__time">${timestamp}</div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    };
+
+    // 저장된 레벨과 함께 봇 메시지 추가
+    const addBotMessageWithLevel = (message, timestamp, level) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-bot';
+        
+        // 레벨에 따른 라벨 생성
+        let levelMark = '';
+        if (level === 'BASIC') {
+            levelMark = '<div class="beginner_answer__mark">초급</div>';
+        } else if (level === 'INTERMEDIATE') {
+            levelMark = '<div class="intermediate_answer__mark">중급</div>';
+        } else if (level === 'ADVANCED') {
+            levelMark = '<div class="advanced_answer__mark">고급</div>';
         }
         
         messageDiv.innerHTML = `
@@ -811,8 +862,17 @@ const initializeChatbot = () => {
                 data.messages.forEach(message => {
                     if (message.message_type === 'user') {
                         addUserMessage(message.content);
+                    } else if (message.message_type === 'system') {
+                        // JemBot Message 표시
+                        addJemBotMessageFromContent(message.content);
                     } else {
-                        addBotMessage(message.content, message.timestamp);
+                        // 환영 메시지는 전용 함수 사용
+                        if (message.content === '안녕하세요 무엇을 도와드릴까요?') {
+                            addWelcomeBotMessage(message.content, message.timestamp);
+                        } else {
+                            // 저장된 레벨과 함께 봇 메시지 표시
+                            addBotMessageWithLevel(message.content, message.timestamp, message.level);
+                        }
                     }
                 });
                 
@@ -870,8 +930,28 @@ const initializeChatbot = () => {
         jembotDiv.className = 'chat-start__inside';
         jembotDiv.innerHTML = `
             <div class="jembot-message-time">
-                JemBot Message<br>
+                <span class="jembot-title">JemBot Message</span><br>
                 Today ${timeString}
+            </div>
+        `;
+        
+        chatMessages.appendChild(jembotDiv);
+    };
+
+    // 저장된 JemBot Message 내용으로 표시
+    const addJemBotMessageFromContent = (content) => {
+        const jembotDiv = document.createElement('div');
+        jembotDiv.className = 'chat-start__inside';
+        
+        // "JemBot Message" 부분에 스타일 적용
+        const formattedContent = content.replace(
+            'JemBot Message', 
+            '<span class="jembot-title">JemBot Message</span>'
+        ).replace('\n', '<br>');
+        
+        jembotDiv.innerHTML = `
+            <div class="jembot-message-time">
+                ${formattedContent}
             </div>
         `;
         

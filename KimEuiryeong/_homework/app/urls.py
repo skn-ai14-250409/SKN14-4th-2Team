@@ -13,4 +13,11 @@ urlpatterns = [
     path('api/chat-messages/<str:session_id>/', views.get_chat_messages, name='get_chat_messages'),
     path('api/chat-sessions/<str:session_id>/delete/', views.delete_chat_session, name='delete_chat_session'),
     path('get-stock-rag/', views.get_stock_rag, name='get_stock_rag'),
+    # 주식 댓글 관련 URL
+    path('api/stock-reviews/', views.add_stock_review, name='add_stock_review'),
+    path('api/stock-reviews/<str:stock_code>/', views.get_stock_reviews, name='get_stock_reviews'),
+    path('api/stock-reviews/delete/<int:review_id>/', views.delete_stock_review, name='delete_stock_review'),
+    # 주식 좋아요 관련 URL
+    path('api/stock-favorite/toggle/', views.toggle_stock_favorite, name='toggle_stock_favorite'),
+    path('api/stock-favorite/<str:stock_code>/', views.get_stock_favorite_status, name='get_stock_favorite_status'),
 ]
