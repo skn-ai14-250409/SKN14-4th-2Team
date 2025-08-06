@@ -183,6 +183,12 @@
 .jembot-message-time {
     text-align: center;
     padding:20px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.jembot-message-time .jembot-title {
+    font-size: 14px;
 }
 
 .chat-bot__content {

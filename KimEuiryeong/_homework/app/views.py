@@ -1,6 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
+from accounts.models import Stock, StockReview, StockFavorite, CustomUser
 import json
 from urllib.parse import quote
 import requests
@@ -9,7 +12,8 @@ from bs4 import BeautifulSoup
 import yfinance as yf
 from pykrx import stock as pykrx_stock
 import pandas as pd
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+from django.utils import timezone
 import numpy as np
 from .utils2.stock_node import handle_analysis_node
 from openai import OpenAI
@@ -232,7 +236,15 @@ def chatbot(request):
     })
 
 def stock(request):
-    return render(request, 'app/stock.html')
+    # 주식 페이지 접속 시 세션 초기화 (새로운 검색을 위해)
+    if 'current_stock' in request.session:
+        del request.session['current_stock']
+        
+    context = {
+        'current_stock': None,  # 항상 빈 상태로 시작
+        'user_authenticated': request.user.is_authenticated
+    }
+    return render(request, 'app/stock.html', context)
 
 def clean_html(html_string):
     """HTML 태그를 제거하고 텍스트만 반환합니다."""
@@ -521,6 +533,13 @@ def get_stock_info(request):
             for stock in related_stocks_data:
                 print(f"  - {stock['name']}: {stock['code']}")
 
+            # 현재 주식 정보를 세션에 저장
+            request.session['current_stock'] = {
+                'code': code,  # KRX 코드 저장
+                'name': company_name,
+                'yahoo_code': yahoo_code
+            }
+            
             response_data = {
                 'success': True,
                 'companyName': info.get('shortName', company_name),
@@ -690,6 +709,7 @@ def chat_with_openai(request):
             user_message = data.get('message', '')
             session_id = data.get('session_id', None)
             is_new_session = data.get('is_new_session', False)
+            user_level = data.get('level', 'BASIC')  # 사용자가 선택한 레벨
             
             print(f"사용자 메시지: {user_message}")
             print(f"세션 ID: {session_id}")
@@ -705,14 +725,30 @@ def chat_with_openai(request):
                 if is_new_session or not session_id:
                     # 새로운 세션 생성
                     session_id = str(uuid.uuid4())
-                    # 사용자 메시지의 첫 20자를 제목으로 사용
-                    title = user_message[:20] + "..." if len(user_message) > 20 else user_message
+                    # 사용자 메시지의 첫 10자를 제목으로 사용
+                    title = user_message[:10] + "..." if len(user_message) > 20 else user_message
                     chat_session = ChatSession.objects.create(
                         user=request.user,
                         session_id=session_id,
                         title=title
                     )
                     print(f"새 채팅 세션 생성: {session_id}, 제목: {title}")
+                    
+                    # JemBot Message 저장 (모든 새 대화마다)
+                    now = timezone.now()
+                    hour = now.hour
+                    minute = now.minute
+                    period = '오후' if hour >= 12 else '오전'
+                    display_hour = hour % 12 or 12
+                    jembot_time = f"{period} {display_hour:02d}:{minute:02d}"
+                    jembot_content = f"JemBot Message\nToday {jembot_time}"
+                    
+                    ChatMessage.objects.create(
+                        session=chat_session,
+                        message_type='system',  # system 타입으로 구분
+                        content=jembot_content,
+                        level='BASIC'
+                    )
                     
                     # 새 세션에 초기 환영 메시지 저장
                     ChatMessage.objects.create(
@@ -800,7 +836,7 @@ def chat_with_openai(request):
                         session=chat_session,
                         message_type='user',
                         content=user_message,
-                        level='BASIC'  # 기본 레벨
+                        level=user_level  # 사용자가 선택한 레벨
                     )
                     
                     # 봇 응답 저장
@@ -808,7 +844,7 @@ def chat_with_openai(request):
                         session=chat_session,
                         message_type='bot',
                         content=bot_response,
-                        level='BASIC'  # 기본 레벨
+                        level=user_level  # 사용자가 선택한 레벨
                     )
                     
                     print(f"대화 저장 완료: 세션 {session_id}")
@@ -948,4 +984,228 @@ def delete_chat_session(request, session_id):
             return JsonResponse({'error': f'서버 오류: {str(e)}'}, status=500)
     
     return JsonResponse({'error': 'DELETE 요청만 허용됩니다.'}, status=405)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def add_stock_review(request):
+    """주식 댓글 작성 API"""
+    try:
+        # 로그인 체크
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'success': False,
+                'error': 'login_required',
+                'message': '댓글을 작성하려면 로그인이 필요합니다.'
+            }, status=401)
+        
+        data = json.loads(request.body)
+        stock_code = data.get('stock_code')
+        content = data.get('content', '').strip()
+        
+        # 주식 검색 여부 체크
+        if not stock_code:
+            return JsonResponse({
+                'success': False,
+                'error': 'stock_required',
+                'message': '댓글을 작성하려면 먼저 주식을 검색해주세요.'
+            }, status=400)
+        
+        # 댓글 내용 체크
+        if not content:
+            return JsonResponse({
+                'success': False,
+                'error': 'content_required',
+                'message': '댓글 내용을 입력해주세요.'
+            }, status=400)
+        
+        # Stock 객체 가져오거나 생성
+        stock, created = Stock.objects.get_or_create(
+            code=stock_code,
+            defaults={'name': stock_code}  # 기본값으로 코드를 이름으로 사용
+        )
+        
+        # 댓글 생성
+        review = StockReview.objects.create(
+            user=request.user,
+            stock=stock,
+            content=content
+        )
+        
+        # 현재 시각을 포맷팅
+        created_time = timezone.localtime(review.created_at)
+        
+        return JsonResponse({
+            'success': True,
+            'review': {
+                'id': review.id,
+                'content': review.content,
+                'user_name': request.user.name,
+                'user_nickname': request.user.nickname,
+                'created_at': created_time.strftime('%m월 %d일 %H:%M'),
+                'user_profile': request.user.profile_picture.url if request.user.profile_picture else None
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        print(f"댓글 작성 오류: {str(e)}")
+        return JsonResponse({'success': False, 'error': f'서버 오류: {str(e)}'}, status=500)
+
+
+@require_http_methods(["GET"])
+def get_stock_reviews(request, stock_code):
+    """특정 주식의 댓글 목록 가져오기"""
+    try:
+        stock = get_object_or_404(Stock, code=stock_code)
+        reviews = StockReview.objects.filter(stock=stock).order_by('-created_at')
+        
+        review_list = []
+        for review in reviews:
+            created_time = timezone.localtime(review.created_at)
+            review_list.append({
+                'id': review.id,
+                'content': review.content,
+                'user_name': review.user.name,
+                'user_nickname': review.user.nickname,
+                'created_at': created_time.strftime('%m월 %d일 %H:%M'),
+                'user_profile': review.user.profile_picture.url if review.user.profile_picture else None,
+                'can_delete': request.user.is_authenticated and request.user == review.user
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'reviews': review_list,
+            'count': len(review_list)
+        })
+        
+    except Exception as e:
+        print(f"댓글 목록 조회 오류: {str(e)}")
+        return JsonResponse({'success': False, 'error': f'서버 오류: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_stock_review(request, review_id):
+    """주식 댓글 삭제 API"""
+    try:
+        # 로그인 체크
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'success': False,
+                'error': '로그인이 필요합니다.'
+            }, status=401)
+        
+        review = get_object_or_404(StockReview, id=review_id)
+        
+        # 댓글 작성자 체크
+        if review.user != request.user:
+            return JsonResponse({
+                'success': False,
+                'error': '자신이 작성한 댓글만 삭제할 수 있습니다.'
+            }, status=403)
+        
+        review.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': '댓글이 성공적으로 삭제되었습니다.'
+        })
+        
+    except StockReview.DoesNotExist:
+        return JsonResponse({'success': False, 'error': '댓글을 찾을 수 없습니다.'}, status=404)
+    except Exception as e:
+        print(f"댓글 삭제 오류: {str(e)}")
+        return JsonResponse({'success': False, 'error': f'서버 오류: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def toggle_stock_favorite(request):
+    """주식 좋아요 토글 API"""
+    try:
+        # 로그인 체크
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'success': False,
+                'error': 'login_required',
+                'message': '좋아요를 누르려면 로그인이 필요합니다.'
+            }, status=401)
+        
+        data = json.loads(request.body)
+        stock_code = data.get('stock_code')
+        
+        if not stock_code:
+            return JsonResponse({
+                'success': False,
+                'error': 'stock_code_required',
+                'message': '주식 코드가 필요합니다.'
+            }, status=400)
+        
+        # Stock 객체 가져오거나 생성
+        stock, created = Stock.objects.get_or_create(
+            code=stock_code,
+            defaults={'name': stock_code}
+        )
+        
+        # 기존 좋아요 확인
+        favorite, created = StockFavorite.objects.get_or_create(
+            user=request.user,
+            stock=stock
+        )
+        
+        if created:
+            # 새로 좋아요 추가
+            is_favorited = True
+            action = 'added'
+        else:
+            # 기존 좋아요 제거
+            favorite.delete()
+            is_favorited = False
+            action = 'removed'
+        
+        # 총 좋아요 수 계산
+        total_likes = StockFavorite.objects.filter(stock=stock).count()
+        
+        return JsonResponse({
+            'success': True,
+            'is_favorited': is_favorited,
+            'total_likes': total_likes,
+            'action': action
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        print(f"주식 좋아요 토글 오류: {str(e)}")
+        return JsonResponse({'success': False, 'error': f'서버 오류: {str(e)}'}, status=500)
+
+
+@require_http_methods(["GET"])
+def get_stock_favorite_status(request, stock_code):
+    """주식 좋아요 상태 확인 API"""
+    try:
+        stock = get_object_or_404(Stock, code=stock_code)
+        
+        # 총 좋아요 수
+        total_likes = StockFavorite.objects.filter(stock=stock).count()
+        
+        # 현재 사용자가 좋아요 했는지 확인
+        is_favorited = False
+        if request.user.is_authenticated:
+            is_favorited = StockFavorite.objects.filter(
+                user=request.user,
+                stock=stock
+            ).exists()
+        
+        return JsonResponse({
+            'success': True,
+            'is_favorited': is_favorited,
+            'total_likes': total_likes
+        })
+        
+    except Exception as e:
+        print(f"주식 좋아요 상태 조회 오류: {str(e)}")
+        return JsonResponse({'success': False, 'error': f'서버 오류: {str(e)}'}, status=500)
 

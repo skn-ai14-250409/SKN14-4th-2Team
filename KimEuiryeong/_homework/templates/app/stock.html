@@ -3,6 +3,9 @@
 
 {% block head %}
     {{ block.super }}
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta name="user-authenticated" content="{% if user_authenticated %}true{% else %}false{% endif %}">
+    <meta name="current-stock" content="{% if current_stock %}{{ current_stock.code }}{% endif %}">
     <link rel="stylesheet" href="{% static "css/app/stock.css" %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock head %}
@@ -148,7 +151,13 @@
                 <div class="stock-header">
                     <div class="stock-info-display" id="stockInfoDisplay" style="display: none;">
                         <div class="stock-title">
-                            <h2 id="companyName">--</h2>
+                            <div class="company-header">
+                                <h2 id="companyName">--</h2>
+                                <div class="stock-favorite-heart" id="stockFavoriteHeart" style="display: none;">
+                                    <i class="bi bi-heart"></i>
+                                    <span class="like-count" id="stockLikeCount">0</span>
+                                </div>
+                            </div>
                             <span class="stock-symbol" id="stockSymbol">--</span>
                             <div class="related-stocks" id="relatedStocks" style="display: none;">
                                 <div class="related-stocks-list" id="relatedStocksList"></div>
@@ -276,222 +285,19 @@
         <div class="review-container">
             <div class = 'review-inside'>
                 <div class="review-list">
-                    <div class = 'review-list-title'>커뮤니티 <span class="comment-count">(8)</span></div>
-                    <div class="review-box">
-                        <div class="review-header">
-                            <div class="profile-box">
-                                <div class="profile-img"></div>
-                                <div class="user-info">
-                                    <div class="user-nikname">의령공주짱</div>
-                                    <div>
-                                        <span class="upload-time">1분전</span>
-                                        <span class="review-delete-btn">
-                                            <i class="bi bi-trash"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="like-button">
-                                <i class="bi bi-heart"></i>
-                                <span class="like-count">12</span>
-                            </div>
-                        </div>
-                        <div class="review-content">
-                            와... 오늘도 삼성전자 미쳤다. 5% 급등이라니. 다음 주까지 들고 가도 될까?
-                        </div>
-                    </div>
-                    <div class="review-box">
-                        <div class="review-header">
-                            <div class="profile-box">
-                                <div class="profile-img"></div>
-                                <div class="user-info">
-                                    <div class="user-nikname">투자왕</div>
-                                    <div>
-                                        <span class="upload-time">3분전</span>
-                                        <span class="review-delete-btn">
-                                            <i class="bi bi-trash"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="like-button active">
-                                <i class="bi bi-heart-fill"></i>
-                                <span class="like-count">8</span>
-                            </div>
-                        </div>
-                        <div class="review-content">
-                            삼성전자 실적 발표 나왔는데 예상보다 좋네요. 반도체 부문이 특히 강세입니다.
-                        </div>
-                    </div>
-                    <div class="review-box">
-                        <div class="review-header">
-                            <div class="profile-box">
-                                <div class="profile-img"></div>
-                                <div class="user-info">
-                                    <div class="user-nikname">주식초보</div>
-                                    <div>
-                                        <span class="upload-time">5분전</span>
-                                        <span class="review-delete-btn">
-                                            <i class="bi bi-trash"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="like-button">
-                                <i class="bi bi-heart"></i>
-                                <span class="like-count">3</span>
-                            </div>
-                        </div>
-                        <div class="review-content">
-                            처음 투자하는데 삼성전자 어때요? 안전한가요?
-                        </div>
-                    </div>
-                    <div class="review-box">
-                        <div class="review-header">
-                            <div class="profile-box">
-                                <div class="profile-img"></div>
-                                <div class="user-info">
-                                    <div class="user-nikname">차트마스터</div>
-                                    <div>
-                                        <span class="upload-time">7분전</span>
-                                        <span class="review-delete-btn">
-                                            <i class="bi bi-trash"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="like-button active">
-                                <i class="bi bi-heart-fill"></i>
-                                <span class="like-count">15</span>
-                            </div>
-                        </div>
-                        <div class="review-content">
-                            삼성전자 차트 보면 지지선이 강하네요. 70,000원 근처에서 반등할 것 같습니다.
-                        </div>
-                    </div>
-                    <div class="review-box">
-                        <div class="review-header">
-                            <div class="profile-box">
-                                <div class="profile-img"></div>
-                                <div class="user-info">
-                                    <div class="user-nikname">주식초보</div>
-                                    <div>
-                                        <span class="upload-time">5분전</span>
-                                        <span class="review-delete-btn">
-                                            <i class="bi bi-trash"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="like-button">
-                                <i class="bi bi-heart"></i>
-                                <span class="like-count">6</span>
-                            </div>
-                        </div>
-                        <div class="review-content">
-                            RSI가 과매수 구간에 있어서 조심해야 할 것 같아요. 단기 조정 가능성 있습니다.
-                        </div>
-                    </div>
-                    <div class="review-box">
-                        <div class="review-header">
-                            <div class="profile-box">
-                                <div class="profile-img"></div>
-                                <div class="user-info">
-                                    <div class="user-nikname">펀드매니저</div>
-                                    <div>
-                                        <span class="upload-time">25분전</span>
-                                        <span class="review-delete-btn">
-                                            <i class="bi bi-trash"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="like-button active">
-                                <i class="bi bi-heart-fill"></i>
-                                <span class="like-count">18</span>
-                            </div>
-                        </div>
-                        <div class="review-content">
-                            기관투자자들이 삼성전자에 대한 목표주가를 상향 조정했습니다. 80,000원 돌파 가능성 높아요.
-                        </div>
-                    </div>
-                    <div class="review-box">
-                        <div class="review-header">
-                            <div class="profile-box">
-                                <div class="profile-img"></div>
-                                <div class="user-info">
-                                    <div class="user-nikname">뉴스헌터</div>
-                                    <div>
-                                        <span class="upload-time">30분전</span>
-                                        <span class="review-delete-btn">
-                                            <i class="bi bi-trash"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="like-button">
-                                <i class="bi bi-heart"></i>
-                                <span class="like-count">9</span>
-                            </div>
-                        </div>
-                        <div class="review-content">
-                            삼성전자, 미국 애플과 새로운 파트너십 체결 예정이라는 뉴스가 나왔네요. 긍정적입니다.
-                        </div>
-                    </div>
-                    <div class="review-box">
-                        <div class="review-header">
-                            <div class="profile-box">
-                                <div class="profile-img"></div>
-                                <div class="user-info">
-                                    <div class="user-nikname">배당투자자</div>
-                                    <div>
-                                        <span class="upload-time">35분전</span>
-                                        <span class="review-delete-btn">
-                                            <i class="bi bi-trash"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="like-button">
-                                <i class="bi bi-heart"></i>
-                                <span class="like-count">7</span>
-                            </div>
-                        </div>
-                        <div class="review-content">
-                            배당률이 2.5%로 괜찮네요. 안정적인 배당주로도 좋은 선택인 것 같습니다.
-                        </div>
-                    </div>
-                    <div class="review-box">
-                        <div class="review-header">
-                            <div class="profile-box">
-                                <div class="profile-img"></div>
-                                <div class="user-info">
-                                    <div class="user-nikname">AI트레이더</div>
-                                    <div>
-                                        <span class="upload-time">40분전</span>
-                                        <span class="review-delete-btn">
-                                            <i class="bi bi-trash"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="like-button active">
-                                <i class="bi bi-heart-fill"></i>
-                                <span class="like-count">31</span>
-                            </div>
-                        </div>
-                        <div class="review-content">
-                            AI 알고리즘이 삼성전자 매수 신호를 보내고 있습니다. 기술적 지표들이 모두 긍정적이에요.
-                        </div>
+                    <div class = 'review-list-title'>커뮤니티 <span class="comment-count">(0)</span></div>
+                    <div id="reviews-container">
+                        <!-- 댓글이 동적으로 로드됩니다 -->
                     </div>
                 </div>
+
                 <div class = "review-input__container">
                     <div class = "review-input">
                         <div class = 'review-input__box'>
-                            <input type="text" placeholder="댓글을 남겨주세요" />
+                            <input type="text" id="reviewInput" placeholder="댓글을 남겨주세요" />
                         </div>
                         <div class="review-search-button">
-                            <button type="button" class="btn btn-outline-secondary">
+                            <button type="button" id="submitReviewBtn" class="btn btn-outline-secondary">
                                 <i class="bi bi-send"></i>
                             </button>
                         </div>

@@ -44,6 +44,7 @@ class ChatMessage(models.Model):
     MESSAGE_TYPES = [
         ('user', '사용자'),
         ('bot', '봇'),
+        ('system', '시스템'),
     ]
 
     MessageLevels = [
