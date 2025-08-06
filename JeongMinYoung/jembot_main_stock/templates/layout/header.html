@@ -1,0 +1,104 @@
+{% load static %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/layout/header.css' %}">
+    <style>
+        .header__user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-dropdown-btn {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            border: none;
+            background: transparent;
+            color: inherit;
+            padding: 0.5rem;
+        }
+        
+        .user-dropdown-btn:hover {
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 0.5rem;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            margin-right: 0.25rem;
+        }
+        
+        .user-email {
+            font-size: 0.875rem;
+            color: #6c757d;
+            font-weight: normal;
+        }
+        
+        .login-link {
+            text-decoration: none;
+            color: inherit;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        
+        .login-link:hover {
+            background-color: rgba(0,0,0,0.1);
+            color: inherit;
+        }
+    </style>
+{% endblock head %}
+
+<div class="header">
+    <div class="header__logo" onclick="location.href='{% url 'app:chatbot' %}'">
+        <img src="{% static 'images/robot-icon.png' %}" alt="Robot Icon" class="header__logo-image" />
+        <div class="header__logo-name">JemBot</div>
+	</div>
+    
+    <!-- 주식 페이지에서만 표시되는 검색창 -->
+    <div class="header__search" id="headerSearch" style="display: none;">
+        <div class="header-search-container">
+            <input type="text" id="headerStockSearchInput" placeholder="회사명을 입력하세요 (예: 삼성전자, 네이버)" class="header-search-input">
+            <button id="headerStockSearchBtn" class="header-search-btn">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+        <div class="header-search-suggestions" id="headerSearchSuggestions" style="display: none;">
+            <div class="header-suggestions-title">혹시 이거 찾으세요?</div>
+            <div class="header-suggestions-list" id="headerSuggestionsList"></div>
+        </div>
+    </div>
+    
+    <div class="header__actions">
+        <div class="header__help">?</div>
+        {% if user.is_authenticated %}
+            <div class="header__user-info">
+                <div class="user-dropdown dropdown">
+                    <button class="btn btn-link dropdown-toggle user-dropdown-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture }}" alt="Profile" class="user-avatar">
+                        {% endif %}
+                        <span class="user-name">{{ user.name|default:user.username }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text user-email">{{ user.email }}</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'app:logout' %}">
+                            <i class="bi bi-box-arrow-right"></i> 로그아웃
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        {% else %}
+            <div class="header__login">
+                <a href="{% url 'app:login' %}" class="login-link">Login</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
