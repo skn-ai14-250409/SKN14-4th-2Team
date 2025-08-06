@@ -6,16 +6,24 @@ from allauth.account.forms import LoginForm
 
 def home_view(request):
     """
-    로그인 전용 페이지를 보여주는 뷰입니다.
+    로그인 페이지를 보여주고, 로그인 요청(POST)을 직접 처리하는 뷰입니다.
     사용자가 이미 로그인한 상태라면 프로필 페이지로 이동시킵니다.
-    로그인 폼 처리는 allauth가 담당합니다.
     """
     if request.user.is_authenticated:
         return redirect('accounts:account_profile')
-        
-    form = LoginForm()
-    return render(request, 'home.html', {'form': form})
 
+    if request.method == 'POST':
+        form = LoginForm(request=request, data=request.POST) # <--- 이렇게 수정
+        if form.is_valid():
+            # 폼 데이터가 유효하면 사용자를 로그인시킵니다.
+            user = form.user
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            return redirect('accounts:account_profile')
+    
+    else:
+        form = LoginForm()
+        
+    return render(request, 'home.html', {'form': form})
 def signup_view(request):
     """
     일반 회원가입 페이지를 보여주고, 폼 제출(POST 요청)을 처리하는 뷰입니다.
