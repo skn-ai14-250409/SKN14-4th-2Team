@@ -31,6 +31,38 @@
     width : 300px;
 }
 
+.header__stock-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #007bff;
+    text-decoration: underline;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.header__stock-btn:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.header__stock-btn i {
+    font-size: 14px;
+    color: #007bff;
+}
+
+.header__stock-btn:hover i {
+    color: #0056b3;
+}
+
+.header__stock-btn span {
+    font-weight: 500;
+}
+
 .header__help {
     width: 20px;
     height: 20px;

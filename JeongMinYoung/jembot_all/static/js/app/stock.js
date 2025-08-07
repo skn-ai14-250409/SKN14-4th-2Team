@@ -1474,11 +1474,14 @@ async function loadReviews() {
         });
         
         const data = await response.json();
+        console.log('댓글 데이터:', data);
         if (data.success) {
             displayReviews(data.reviews);
+            updateReviewCount(data.review_count);
         } else {
             console.error('댓글 로드 실패:', data.error);
             showEmptyReviews();
+            updateReviewCount(0);
         }
     } catch (error) {
         console.error('댓글 로드 오류:', error);
@@ -1500,15 +1503,31 @@ function displayReviews(reviews) {
     
     let reviewsHtml = '';
     reviews.forEach(review => {
+        console.log('댓글 정보:', review);
         const likeIconClass = review.is_liked ? 'bi-heart-fill' : 'bi-heart';
         const likeButtonClass = review.is_liked ? 'like-button active' : 'like-button';
         const deleteButtonStyle = review.can_delete ? '' : 'style="display: none;"';
+        
+        // 프로필 이미지 HTML 생성
+        let profileImgHtml = '';
+        let profileImgClass = 'profile-img';
+        if (review.profile_picture_url) {
+            console.log('프로필 이미지 URL:', review.profile_picture_url);
+            profileImgHtml = `<img src="${review.profile_picture_url}" alt="Profile" onerror="this.style.display='none'; this.parentElement.classList.remove('has-image');">`;
+            profileImgClass = 'profile-img has-image';
+        } else {
+            console.log('기본 프로필 이미지 사용');
+            profileImgHtml = `<img src="/static/images/robot-icon.png" alt="Profile" onerror="this.style.display='none'; this.parentElement.classList.remove('has-image');">`;
+            profileImgClass = 'profile-img has-image';
+        }
         
         reviewsHtml += `
             <div class="review-box" data-review-id="${review.id}">
                 <div class="review-header">
                     <div class="profile-box">
-                        <div class="profile-img"></div>
+                        <div class="${profileImgClass}">
+                            ${profileImgHtml}
+                        </div>
                         <div class="user-info">
                             <div class="user-nikname">${review.user_nickname}</div>
                             <div>
@@ -1533,6 +1552,19 @@ function displayReviews(reviews) {
     
     reviewsContainer.innerHTML = reviewsHtml;
     console.log(`${reviews.length}개의 댓글을 표시했습니다.`);
+}
+
+/**
+ * 댓글 수를 업데이트합니다.
+ */
+function updateReviewCount(count) {
+    const commentCountElement = document.querySelector('.comment-count');
+    if (commentCountElement) {
+        commentCountElement.textContent = `(${count})`;
+        console.log(`댓글 수 업데이트: ${count}`);
+    } else {
+        console.error('댓글 수 요소를 찾을 수 없습니다.');
+    }
 }
 
 /**

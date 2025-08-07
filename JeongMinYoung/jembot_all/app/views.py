@@ -1284,10 +1284,16 @@ def get_stock_reviews(request):
                     minutes = time_diff.seconds // 60
                     time_ago = f"{minutes}분전"
                 
+                # 프로필 이미지 URL 생성
+                profile_picture_url = None
+                if review.user.profile_picture and review.user.profile_picture.name != 'profile_pics/robot-icon.png':
+                    profile_picture_url = review.user.profile_picture.url
+                
                 reviews_data.append({
                     'id': review.id,
                     'content': review.content,
                     'user_nickname': review.user.nickname,
+                    'profile_picture_url': profile_picture_url,
                     'created_at': time_ago,
                     'like_count': like_count,
                     'is_liked': is_liked,
@@ -1296,7 +1302,8 @@ def get_stock_reviews(request):
             
             return JsonResponse({
                 'success': True,
-                'reviews': reviews_data
+                'reviews': reviews_data,
+                'review_count': len(reviews_data)
             })
             
         except Exception as e:

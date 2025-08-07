@@ -315,6 +315,27 @@
     background-size: 20px;
     background-position: center;
     background-repeat: no-repeat;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.profile-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+
+/* 이미지가 있을 때는 배경 이미지를 숨김 */
+.profile-img.has-image {
+    background-image: none !important;
 }
 
 .user-info {

@@ -79,8 +79,11 @@
     </div>
     
     <div class="header__actions">
-        <div class="header__help">?</div>
         {% if user.is_authenticated %}
+            <a href="{% url 'app:stock' %}" class="header__stock-btn">
+                <i class="bi bi-graph-up"></i>
+                <span>주식분석</span>
+            </a>
             <div class="header__user-info">
                 <div class="user-dropdown dropdown">
                     <button class="user-dropdown-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
