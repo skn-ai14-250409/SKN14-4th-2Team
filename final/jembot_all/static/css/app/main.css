@@ -297,7 +297,7 @@
 }
 
 .choices { 
-    padding: 20px 0px;
+    padding: 20px 0px 0px;
     display :flex;
     justify-content: space-between;
 }
@@ -479,6 +479,15 @@
     transition: all 0.2s ease !important;
     color: #6c757d !important;
 }
+
+/* 즐겨찾기 활성화 상태 */
+.favorite-btn i.bi-star-fill {
+    color: #ffc107 !important;
+}
+
+.favorite-btn:hover i.bi-star-fill {
+    color: #ffb300 !important;
+}
   
 .stock-price-section {
     display: flex;
@@ -487,7 +496,7 @@
 }
   
 .current-price {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 600;
     color: #222;
 }
@@ -530,7 +539,6 @@
 }
   
 .stock-chart {
-    margin: 10px 0;
     background: #f3f6fa;
     border-radius: 12px;
     padding: 12px 8px;

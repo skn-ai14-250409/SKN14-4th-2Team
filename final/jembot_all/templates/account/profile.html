@@ -5,8 +5,7 @@
 
 {% block content %}
 <div class="mypage-container">
-    <h1>마이페이지</h1>
-    <hr>
+    <h1 style="margin-bottom: 1.5rem; margin-top: 0;">마이페이지</h1>
     <div class="profile-section">
         {% if user.profile_picture and user.profile_picture.name != 'profile_pics/robot-icon.png' %}
             <img src="{{ user.profile_picture.url }}" alt="프로필 사진" class="profile-pic">
@@ -22,7 +21,7 @@
         <p><strong>이메일(email):</strong> {{ user.email }}</p>
         <p><strong>가입일:</strong> {{ user.date_joined|date:"Y년 m월 d일" }}</p>
     </div>
-    <div class="profile-action-buttons-container" style="display: flex !important; gap: 1rem !important; justify-content: center !important; margin-top: 2rem !important; flex-wrap: wrap !important; text-align: center !important; padding-top: 20px !important; border-top: 1px solid #e9ecef !important;">
+    <div class="profile-action-buttons-container" style="display: flex !important; gap: 1rem !important; justify-content: center !important; margin-top: 1rem !important; flex-wrap: wrap !important; text-align: center !important; padding-top: 15px !important; border-top: 1px solid #e9ecef !important;">
         <div class="profile-action-button-wrapper home-button-wrapper" style="display: inline-block !important; margin: 0 !important; padding: 0 !important; background: none !important;">
             <a href="{% url 'app:main' %}" class="profile-action-btn profile-home-btn" style="all: unset !important; display: inline-block !important; padding: 12px 25px !important; font-size: 16px !important; font-weight: 500 !important; text-align: center !important; text-decoration: none !important; border-radius: 5px !important; border: none !important; cursor: pointer !important; transition: background-color 0.2s ease-in-out, transform 0.1s ease !important; color: white !important; background-color: #6c757d !important; margin: 0 !important; outline: none !important; box-shadow: none !important; min-width: 120px !important; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important; line-height: normal !important; vertical-align: baseline !important; white-space: nowrap !important; overflow: visible !important; position: relative !important; float: none !important;">홈으로</a>
         </div>
@@ -67,12 +66,16 @@ document.addEventListener('DOMContentLoaded', function() {
 .mypage-container {
     max-width: 800px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1rem;
+    min-height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .profile-section {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .profile-pic,
@@ -87,14 +90,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .info-section {
     background-color: #f8f9fa;
-    padding: 2rem;
+    padding: 1.5rem;
     border-radius: 8px;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .info-section p {
-    margin-bottom: 1rem;
-    padding: 0.5rem 0;
+    margin-bottom: 0.8rem;
+    padding: 0.4rem 0;
     border-bottom: 1px solid #e9ecef;
 }
 

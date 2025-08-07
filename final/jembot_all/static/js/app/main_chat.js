@@ -482,12 +482,12 @@ function showLoadingMessage() {
     
     loadingDiv.innerHTML = `
         <div class="chat-bot__content">
-            <div class="loading-dots">
+            <span class="loading-dots">
                 <span></span>
                 <span></span>
                 <span></span>
-            </div>
-            <span style="margin-left: 6px;">생각 중...</span>
+            </span>
+            <span style="margin-left: 2px;">생각 중...</span>
         </div>
         <div class="chat-bot__time">${getCurrentTime()}</div>
     `;
