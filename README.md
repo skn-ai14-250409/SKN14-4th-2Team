@@ -115,26 +115,26 @@ LLM의 널리지 컷오프 특성상 최신정보를 알기어렵기때문에 �
 <hr>
 
 ## 3️⃣ 기술 스택 및 파일 구조
-| 항목 | 내용                                                                                                                                                                                                                                                                                                       |
-| :--- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Language** | ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) ![LangChain](https://img.shields.io/badge/LangChain-00863D?style=for-the-badge&logo=langchain&logoColor=white) ![RAG](https://img.shields.io/badge/RAG-8A2BE2?style=for-the-badge&logoColor=white) |
-| **Development** | ![VS Code](https://img.shields.io/badge/VS%20Code-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![PyCharm](https://img.shields.io/badge/PyCharm-000000?style=for-the-badge&logo=pycharm&logoColor=white)                                                                           |
-| **Embedding** | ![BAAI/bge-m3](https://img.shields.io/badge/BAAI/bge--m3-000000?style=for-the-badge&logo=huggingface&logoColor=white)                                                                                                                                                                                    |
-| **LLM Model** | ![Chat GPT-4o](https://img.shields.io/badge/ChatGPT--4o--mini-4B91FF?style=for-the-badge&logo=openai&logoColor=white)                                                                                                                                                                                    |
-| **Collaboration Tool** | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)                                                                                                                                                                                                             |
-| **Vector DB** | ![FAISS](https://img.shields.io/badge/FAISS-4B8BEA?style=for-the-badge&logo=facebook&logoColor=white) ![Pinecone](https://img.shields.io/badge/Pinecone-3B77DD?style=for-the-badge&logo=pinecone&logoColor=white)                                                                                        |
-| **API 활용** | ![Open Dart API](https://img.shields.io/badge/Open%20DART%20API-002D61?style=for-the-badge&logoColor=white)                                                                                                                                                                                              |
+| 항목              | 내용                                                                                                                                                                                                                                                                                                         |
+| :---------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Language**      | ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) ![LangChain](https://img.shields.io/badge/LangChain-00863D?style=for-the-badge&logo=langchain&logoColor=white) ![RAG](https://img.shields.io/badge/RAG-8A2BE2?style=for-the-badge&logoColor=white) ![LangGraph](https://img.shields.io/badge/LangGraph-1E90FF?style=for-the-badge&logo=graphviz&logoColor=white) |
+| **Development**   | ![VS Code](https://img.shields.io/badge/VS%20Code-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![PyCharm](https://img.shields.io/badge/PyCharm-000000?style=for-the-badge&logo=pycharm&logoColor=white)                                                                                                                                         |
+| **Embedding**     | ![BAAI/bge-m3](https://img.shields.io/badge/BAAI/bge--m3-000000?style=for-the-badge&logo=huggingface&logoColor=white)                                                                                                                                                                                                                                  |
+| **LLM Model**     | ![Chat GPT-4o](https://img.shields.io/badge/ChatGPT--4o--mini-4B91FF?style=for-the-badge&logo=openai&logoColor=white)                                                                                                                                                                                                                                    |
+| **Collaboration Tool** | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)                                                                                                                                                                                                                                                         |
+| **Vector DB**     | ![FAISS](https://img.shields.io/badge/FAISS-4B8BEA?style=for-the-badge&logo=facebook&logoColor=white) ![Pinecone](https://img.shields.io/badge/Pinecone-3B77DD?style=for-the-badge&logo=pinecone&logoColor=white)                                                                                                                                    |
+| **API 활용**      | ![Open Dart API](https://img.shields.io/badge/Open%20DART%20API-002D61?style=for-the-badge&logoColor=white) ![Yahoo Finance](https://img.shields.io/badge/yfinance-144E8C?style=for-the-badge&logo=yahoo&logoColor=white) ![PyKRX](https://img.shields.io/badge/pykrx-1F9F3F?style=for-the-badge&logoColor=white)                                                                                 |
 
-• yfinance                                                                      │
-│    - Yahoo Finance API                                                          │
-│    - 실시간 주식 데이터                                                          │
-│    - 주가, 거래량, 재무정보                                                      │
-│                                                                                 │
-│  • pykrx                                                                        │
-│    - 한국 주식 데이터                                                            │
-│    - KOSPI, KOSDAQ 정보                                                         │
-│    - 한국 기업 재무정보                                                          │
-│
+### 상세 설명
+- **yfinance**  
+  - Yahoo Finance API  
+  - 실시간 주식 데이터  
+  - 주가, 거래량, 재무정보  
+
+- **pykrx**  
+  - 한국 주식 데이터  
+  - KOSPI, KOSDAQ 정보  
+  - 한국 기업 재무정보  
 
 
 
@@ -338,18 +338,6 @@ RAG (FAISS 벡터 DB / DART Open API)
   <img src="image/wire.png" width="auto" alt="화면1"/>
 
 
-### 테스트 진행
-
-- **테스트 목적**  
-  챗봇이 질문에 맞는 대답을 찾지 못하거나 환각 현상이 일어남을 방지하기 위함.
-
-
-- **테스트 환경**  
-  - LLM: GPT-4o-mini (OpenAI API)  
-  - 벡터 DB: pinecone,Faiss  
-  - 외부 API: Open Dart API
-
-
 - **결과**<br>
   <img src="image/결과1.png" width="auto" alt="결과1"/><br>
   <img src="image/결과2.png" width="auto" alt="결과2"/><br>
@@ -359,13 +347,13 @@ RAG (FAISS 벡터 DB / DART Open API)
 
 ### 추가 구현 사항
 **채팅창 옆에 뉴스와 주식을 볼 수 있는 칸을 구현하여 기업에 관한 정보를 많이 습득할 수 있도록 하였습니다.**
-#### 1. 뉴스
-<img src="image/뉴스.png" width="auto" alt="뉴스"/><br>
+#### 1. 관심기업 및 종합보고서 기능 그리고 주식조회와 왼쪽의 댓글코멘트와 좋아요의 기능을 추가
+<img src="image/결과3.png" width="auto" alt="결과3"/><br>
 - 밑의 입력창에 기업명을 적으면 그 기업과 관련된 기사들이 뜨게 되며 이를 바탕으로 그 기업에
 대해 보다 잘 알 수 있게 구현했습니다.
 
-#### 2. 주식
-<img src="image/주식.png" width="auto" alt="주식"/><br>
+#### 2. 마이페이지와 회원가입기능 추가
+<img src="image/결과4.png" width="auto" alt="결과4"/><br> 
 - 투자에 관심이 있으신 분들을 위해 기업 관련 주식이 나오는 칸을 만들어 보다 찾아보기
 쉽게 구현했습니다.
 
