@@ -1,8 +1,9 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
+from django.conf import settings
 from accounts.models import Stock, StockReview, StockFavorite, CustomUser
 import json
 from urllib.parse import quote
@@ -217,21 +218,8 @@ def get_related_stocks(company_name, code):
 def chatbot(request):
     from django.utils import timezone
     
-    # 현재 날짜 가져오기
-    today = timezone.now().date()
-    
-    # 세션에서 마지막으로 JemBot 메시지를 본 날짜 확인
-    last_jembot_date = request.session.get('last_jembot_date')
-    
-    # 오늘 처음 접속하거나, 하루가 지났으면 JemBot 메시지 표시
-    show_jembot_message = False
-    if last_jembot_date is None or str(today) != last_jembot_date:
-        show_jembot_message = True
-        # 세션에 오늘 날짜 저장
-        request.session['last_jembot_date'] = str(today)
-    
     return render(request, 'app/main.html', {
-        'show_jembot_message': show_jembot_message,
+        'show_jembot_message': False,  # 항상 False (데이터베이스에서만 관리)
         'now': timezone.now(),
     })
 
@@ -734,21 +722,28 @@ def chat_with_openai(request):
                     )
                     print(f"새 채팅 세션 생성: {session_id}, 제목: {title}")
                     
-                    # JemBot Message 저장 (모든 새 대화마다)
-                    now = timezone.now()
-                    hour = now.hour
-                    minute = now.minute
-                    period = '오후' if hour >= 12 else '오전'
-                    display_hour = hour % 12 or 12
-                    jembot_time = f"{period} {display_hour:02d}:{minute:02d}"
-                    jembot_content = f"JemBot Message\nToday {jembot_time}"
+                    # JemBot Message 저장 (하루에 한 번만)
+                    today = timezone.now().date()
+                    last_jembot_date = request.session.get('last_jembot_date')
                     
-                    ChatMessage.objects.create(
-                        session=chat_session,
-                        message_type='system',  # system 타입으로 구분
-                        content=jembot_content,
-                        level='BASIC'
-                    )
+                    if last_jembot_date is None or str(today) != last_jembot_date:
+                        now = timezone.now()
+                        hour = now.hour
+                        minute = now.minute
+                        period = '오후' if hour >= 12 else '오전'
+                        display_hour = hour % 12 or 12
+                        jembot_time = f"{period} {display_hour:02d}:{minute:02d}"
+                        jembot_content = f"JemBot Message\nToday {jembot_time}"
+                        
+                        ChatMessage.objects.create(
+                            session=chat_session,
+                            message_type='system',  # system 타입으로 구분
+                            content=jembot_content,
+                            level='BASIC'
+                        )
+                        
+                        # 세션에 오늘 날짜 저장
+                        request.session['last_jembot_date'] = str(today)
                     
                     # 새 세션에 초기 환영 메시지 저장
                     ChatMessage.objects.create(
@@ -1143,11 +1138,20 @@ def toggle_stock_favorite(request):
                 'message': '주식 코드가 필요합니다.'
             }, status=400)
         
+        # 현재 세션에서 주식 이름 가져오기
+        current_stock = request.session.get('current_stock', {})
+        stock_name = current_stock.get('name', stock_code)
+        
         # Stock 객체 가져오거나 생성
         stock, created = Stock.objects.get_or_create(
             code=stock_code,
-            defaults={'name': stock_code}
+            defaults={'name': stock_name}
         )
+        
+        # 기존 Stock 객체의 이름이 코드와 같다면 실제 이름으로 업데이트
+        if stock.name == stock_code and stock_name != stock_code:
+            stock.name = stock_name
+            stock.save()
         
         # 기존 좋아요 확인
         favorite, created = StockFavorite.objects.get_or_create(
@@ -1207,5 +1211,74 @@ def get_stock_favorite_status(request, stock_code):
         
     except Exception as e:
         print(f"주식 좋아요 상태 조회 오류: {str(e)}")
+        return JsonResponse({'success': False, 'error': f'서버 오류: {str(e)}'}, status=500)
+
+
+def favorites(request):
+    """즐겨찾기 페이지"""
+    if not request.user.is_authenticated:
+        return redirect('account_login')
+    
+    return render(request, 'app/favorites.html')
+
+
+@require_http_methods(["GET"])
+def get_user_favorites(request):
+    """사용자 즐겨찾기 목록 조회 API"""
+    try:
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': '로그인이 필요합니다.'}, status=401)
+        
+        # 사용자의 즐겨찾기 목록 조회
+        favorites = StockFavorite.objects.filter(user=request.user).select_related('stock').order_by('-created_at')
+        
+        favorites_data = []
+        for favorite in favorites:
+            # 각 주식의 총 좋아요 수 계산
+            total_likes = StockFavorite.objects.filter(stock=favorite.stock).count()
+            
+            # 실제 회사 이름 가져오기 시도
+            stock_name = favorite.stock.name
+            
+            # 만약 stock.name이 주식 코드와 같다면 실제 회사 이름을 조회
+            if stock_name == favorite.stock.code:
+                try:
+                    # corp_list.json에서 회사 이름 찾기
+                    import json
+                    import os
+                    
+                    corp_list_path = os.path.join(settings.BASE_DIR, 'app', 'utils2', 'corp_list.json')
+                    if os.path.exists(corp_list_path):
+                        with open(corp_list_path, 'r', encoding='utf-8') as f:
+                            corp_data = json.load(f)
+                            for corp in corp_data:
+                                if corp.get('종목코드') == favorite.stock.code:
+                                    stock_name = corp.get('회사명', favorite.stock.code)
+                                    # 데이터베이스의 Stock 이름도 업데이트
+                                    if stock_name != favorite.stock.code:
+                                        favorite.stock.name = stock_name
+                                        favorite.stock.save()
+                                    break
+                except Exception as name_error:
+                    print(f"회사 이름 조회 오류: {str(name_error)}")
+                    # 오류가 발생해도 기존 이름 사용
+                    pass
+            
+            favorites_data.append({
+                'id': favorite.id,
+                'stock_code': favorite.stock.code,
+                'stock_name': stock_name,
+                'total_likes': total_likes,
+                'created_at': favorite.created_at.strftime('%Y년 %m월 %d일'),
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'favorites': favorites_data,
+            'count': len(favorites_data)
+        })
+        
+    except Exception as e:
+        print(f"즐겨찾기 목록 조회 오류: {str(e)}")
         return JsonResponse({'success': False, 'error': f'서버 오류: {str(e)}'}, status=500)
 

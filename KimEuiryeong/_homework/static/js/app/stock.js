@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log("stock.js: DOMContentLoaded - 스크립트 실행 시작");
+    
+    // 즐겨찾기 목록 로드
+    loadFavoritesToContainer();
 
     // --- 즐겨찾기 하트 클릭 이벤트 ---
     const favoriteHearts = document.querySelectorAll('.favorite-heart');
@@ -904,6 +907,25 @@ let currentStockCode = null;
 // 페이지 로드 시 댓글 시스템 초기화
 document.addEventListener('DOMContentLoaded', function() {
     initializeCommentSystem();
+    
+    // 즐겨찾기에서 온 경우 자동 검색
+    const searchStockCode = sessionStorage.getItem('searchStockCode');
+    if (searchStockCode) {
+        sessionStorage.removeItem('searchStockCode');
+        
+        // 검색 입력창에 주식 코드 설정
+        const searchInput = document.querySelector('.search-box input');
+        if (searchInput) {
+            searchInput.value = searchStockCode;
+            
+            // 자동 검색 실행 (main.js의 searchStock 함수 호출)
+            if (typeof window.searchStock === 'function') {
+                setTimeout(() => {
+                    window.searchStock(searchStockCode);
+                }, 500);
+            }
+        }
+    }
 });
 
 function initializeCommentSystem() {
@@ -1197,6 +1219,28 @@ function toggleStockFavorite() {
         if (data.success) {
             updateFavoriteButton(data.is_favorited, data.total_likes);
             console.log(`주식 좋아요 ${data.action}: ${data.total_likes}개`);
+            
+            // favorite-container 업데이트
+            if (data.is_favorited && data.action === 'added') {
+                // 주식 이름 가져오기 (정확한 셀렉터 사용)
+                const stockNameElement = document.querySelector('.stock-header .stock-title h2') || 
+                                       document.querySelector('.stock-title h2') ||
+                                       document.querySelector('h2');
+                const stockName = stockNameElement ? stockNameElement.textContent.trim() : currentStockCode;
+                addToFavoriteContainer(currentStockCode, stockName, data.total_likes);
+            } else if (!data.is_favorited && data.action === 'removed') {
+                // favorite-container에서 해당 항목 제거
+                const favoriteBox = document.querySelector(`[data-stock-code="${currentStockCode}"]`);
+                if (favoriteBox) {
+                    favoriteBox.remove();
+                }
+            }
+            
+            // 즐겨찾기 페이지에 변경사항 알림 (다른 탭이나 창에서 열린 경우)
+            localStorage.setItem('favoriteUpdated', Date.now());
+            
+            // 현재 페이지에서 즐겨찾기 페이지가 열린 경우를 위한 이벤트 발생
+            window.dispatchEvent(new CustomEvent('favoriteChanged'));
         } else {
             if (data.error === 'login_required') {
                 if (confirm(data.message + ' 로그인 페이지로 이동하시겠습니까?')) {
@@ -1249,5 +1293,166 @@ function loadStockFavoriteStatus(stockCode) {
     .catch(error => {
         console.error('좋아요 상태 로드 오류:', error);
     });
+}
+
+// favorite-container에 즐겨찾기 목록 로드
+function loadFavoritesToContainer() {
+    fetch('/jembot/api/favorites/')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayFavoritesInContainer(data.favorites);
+        } else {
+            console.error('즐겨찾기 로드 오류:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('즐겨찾기 로드 오류:', error);
+    });
+}
+
+// favorite-container에 즐겨찾기 표시
+function displayFavoritesInContainer(favorites) {
+    const container = document.querySelector('.favorites-section .section-content');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (favorites.length === 0) {
+        container.innerHTML = '<div class="empty-message">즐겨찾기한 주식이 없습니다.</div>';
+        return;
+    }
+    
+    favorites.forEach(favorite => {
+        const favoriteBox = document.createElement('div');
+        favoriteBox.className = 'favorite-list__box';
+        favoriteBox.dataset.stockCode = favorite.stock_code;
+        
+        favoriteBox.innerHTML = `
+            <div class="favorite-info" data-stock-code="${favorite.stock_code}">
+                <div class="favorite-list__title">${favorite.stock_name}</div>
+                <div class="favorite-list__code">${favorite.stock_code}</div>
+            </div>
+            <div class="favorite-heart active" data-stock-code="${favorite.stock_code}">
+                <i class="bi bi-heart-fill"></i>
+                <span class="like-count">${favorite.total_likes}</span>
+            </div>
+        `;
+        
+        // 주식 정보 클릭 시 검색
+        const favoriteInfo = favoriteBox.querySelector('.favorite-info');
+        favoriteInfo.addEventListener('click', function(e) {
+            e.stopPropagation();
+            searchStockFromFavorite(favorite.stock_code);
+        });
+        
+        // 하트 클릭 시 즐겨찾기 제거
+        const heart = favoriteBox.querySelector('.favorite-heart');
+        heart.addEventListener('click', function(e) {
+            e.stopPropagation();
+            removeFavoriteFromContainer(favorite.stock_code, favoriteBox);
+        });
+        
+        container.appendChild(favoriteBox);
+    });
+}
+
+// 즐겨찾기에서 주식 검색
+function searchStockFromFavorite(stockCode) {
+    console.log(`즐겨찾기에서 주식 검색: ${stockCode}`);
+    // 주식 검색 기능 호출 (기존 검색 함수 재사용)
+    searchStock(stockCode);
+}
+
+// favorite-container에서 즐겨찾기 제거
+function removeFavoriteFromContainer(stockCode, element) {
+    // 확인 메시지 표시
+    if (!confirm(`${stockCode}을(를) 즐겨찾기에서 제거하시겠습니까?`)) {
+        return;
+    }
+    
+    fetch('/jembot/api/stock-favorite/toggle/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ stock_code: stockCode })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (!data.is_favorited && data.action === 'removed') {
+                // 즐겨찾기에서 제거됨 - 화면에서도 제거
+                element.remove();
+                console.log(`${stockCode} 즐겨찾기에서 제거됨`);
+                
+                // 현재 표시 중인 주식이면 하트 버튼도 업데이트
+                if (currentStockCode === stockCode) {
+                    updateFavoriteButton(false, data.total_likes);
+                }
+                
+                // 즐겨찾기가 비어있는지 확인
+                const container = document.querySelector('.favorites-section .section-content');
+                if (container && container.children.length === 0) {
+                    container.innerHTML = '<div class="empty-message">즐겨찾기한 주식이 없습니다.</div>';
+                }
+            }
+        } else {
+            if (data.error === 'login_required') {
+                alert('로그인이 필요합니다.');
+            } else {
+                alert('즐겨찾기 제거 중 오류가 발생했습니다.');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('즐겨찾기 제거 오류:', error);
+        alert('즐겨찾기 제거 중 오류가 발생했습니다.');
+    });
+}
+
+// 즐겨찾기 추가 후 container 업데이트
+function addToFavoriteContainer(stockCode, stockName, totalLikes) {
+    const container = document.querySelector('.favorites-section .section-content');
+    if (!container) return;
+    
+    // 빈 메시지 제거
+    const emptyMessage = container.querySelector('.empty-message');
+    if (emptyMessage) {
+        emptyMessage.remove();
+    }
+    
+    const favoriteBox = document.createElement('div');
+    favoriteBox.className = 'favorite-list__box';
+    favoriteBox.dataset.stockCode = stockCode;
+    
+    favoriteBox.innerHTML = `
+        <div>
+            <div class="favorite-list__title">${stockName}</div>
+            <div class="favorite-list__code">${stockCode}</div>
+        </div>
+        <div class="favorite-heart active">
+            <i class="bi bi-heart-fill"></i>
+            <span class="like-count">${totalLikes}</span>
+        </div>
+    `;
+    
+    // 클릭 이벤트 추가
+    favoriteBox.addEventListener('click', function(e) {
+        if (!e.target.closest('.favorite-heart')) {
+            searchStockFromFavorite(stockCode);
+        }
+    });
+    
+    // 하트 클릭 이벤트 추가
+    const heart = favoriteBox.querySelector('.favorite-heart');
+    heart.addEventListener('click', function(e) {
+        e.stopPropagation();
+        removeFavoriteFromContainer(stockCode, favoriteBox);
+    });
+    
+    // 맨 위에 추가
+    container.insertBefore(favoriteBox, container.firstChild);
 }
 

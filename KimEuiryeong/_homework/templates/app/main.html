@@ -4,9 +4,7 @@
 {% block head %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static "css/app/main.css" %}">
-    {% if user.is_authenticated %}
-    <meta name="user-authenticated" content="true">
-    {% endif %}
+    <meta name="user-authenticated" content="{% if user.is_authenticated %}true{% else %}false{% endif %}">
 {% endblock head %}
 
 {% block title %}chatbot{% endblock title %}
@@ -17,11 +15,11 @@
     <div class="chat-list chat-sidebar">
         <div class="chat-list__add">
             <div class="chat-list__name">대화 목록</div>
-            <div class="chat-add-button"><button type="button" class="btn btn-outline-secondary new-chat-btn">+</button></div>
+            <div class="chat-add-button"><button type="button" class="btn btnㅎ-outline-secondary new-chat-btn">+</button></div>
         </div>
         <div class="chat-list__item" id="chatListContainer">
             <!-- 동적으로 생성되는 대화 목록이 여기에 추가됩니다 -->
-            <div class="chat-list__empty">저장된 대화가 없습니다.</div>
+            <div class="chat-list__empty">대화를 저장하려면 로그인을 하세요.</div>
         </div>
 
 

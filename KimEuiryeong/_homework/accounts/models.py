@@ -80,6 +80,7 @@ class StockFavorite(models.Model):
     """
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='stock_favorites')
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='favorites')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         # 한 사용자가 동일한 주식을 여러 번 즐겨찾기하는 것을 방지 (user,stock 조합은 유일해야 함)

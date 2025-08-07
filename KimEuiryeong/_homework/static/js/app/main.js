@@ -2,18 +2,6 @@
 
 console.log('JavaScript 파일이 로드되었습니다!');
 
-// JS에서 대화 시작 시
-const now = new Date();
-if (now.getHours() < 12) {
-  const chatMessages = document.querySelector('.chat-messages');
-  if (chatMessages) {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'jembot-message-time';
-    msgDiv.innerHTML = `JemBot Message<br>Today ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    chatMessages.prepend(msgDiv);
-  }
-}
-
 const sideButtonHandler = () => {
     const $buttons = document.querySelectorAll('#news-button, #stock-button');
     const $news_container = document.querySelector('#news-container');
@@ -902,8 +890,17 @@ const initializeChatbot = () => {
         const now = new Date();
         const time = formatTime(now);
         
-        // JemBot Message 표시 (항상 표시)
-        addJemBotMessage(now);
+        // 비인증 사용자의 경우 프론트엔드에서 JemBot Message 표시 (하루에 한 번)
+        const userAuthenticated = document.querySelector('meta[name="user-authenticated"]');
+        if (!userAuthenticated || userAuthenticated.getAttribute('content') !== 'true') {
+            const today = now.toDateString();
+            const lastJemBotDate = localStorage.getItem('lastJemBotDate');
+            
+            if (!lastJemBotDate || lastJemBotDate !== today) {
+                addJemBotMessage(now);
+                localStorage.setItem('lastJemBotDate', today);
+            }
+        }
         
         addWelcomeBotMessage('안녕하세요 무엇을 도와드릴까요?', time);
     };

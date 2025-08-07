@@ -73,7 +73,10 @@
     background-color: #f0f0f0;
 }
 
-.profile-img {
+.header__profile-image .profile-img,
+.header__profile-image img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
