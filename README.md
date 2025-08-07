@@ -253,7 +253,7 @@ DART 서버에서 실시간 재무제표 데이터를 조회합니다.
 5. 답변 생성: chain_setting.py의 financial_chain이 조회된 실제 데이터를 바탕으로 
 최종 실적 분석 답변을 생성하여 사용자에게 보여줍니다.
 
-## 6️⃣ 스트림릿 구현
+## 6️⃣ Django WEBAPP 구현
 
 **메인 페이지**
   <img src="image/메인 페이지.png" width="auto" alt="화면1"/>
@@ -273,7 +273,9 @@ DART 서버에서 실시간 재무제표 데이터를 조회합니다.
 
 - **결과**<br>
   <img src="image/결과1.png" width="auto" alt="결과1"/><br>
-  <img src="image/결과2.png" width="auto" alt="결과2"/><br> 
+  <img src="image/결과2.png" width="auto" alt="결과2"/><br>
+  <img src="image/결과2.png" width="auto" alt="결과3"/><br>
+  <img src="image/결과2.png" width="auto" alt="결과4"/><br> 
 
 
 ### 추가 구현 사항

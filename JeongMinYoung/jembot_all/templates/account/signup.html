@@ -1,0 +1,61 @@
+{% extends "layout/base.html" %}
+{% load i18n %}
+{% load account socialaccount %}
+{% load static %}
+
+{% block title %}{% trans "Signup" %}{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-form">
+        <h2>{% trans "Sign Up" %}</h2>
+
+        {% get_providers as socialaccount_providers %}
+
+        {% if socialaccount_providers %}
+        <div class="social-login">
+            <p>{% trans "소셜 계정으로 회원가입" %}</p>
+            <div class="login_box">
+                {% include "socialaccount/snippets/provider_list.html" with process="signup" %}
+            </div>
+        </div>
+
+        <hr class="divider">
+        {% endif %}
+
+        <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="error-message">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+
+            <button type="submit" class="btn-submit">{% trans "Sign Up" %}</button>
+        </form>
+
+        <div class="form-switch">
+            <p>{% trans "이미 계정이 있으신가요?" %} <a href="{% url 'account_login' %}">{% trans "로그인" %}</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %} 
