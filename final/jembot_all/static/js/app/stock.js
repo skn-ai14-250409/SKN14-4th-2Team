@@ -136,6 +136,7 @@ function hideChartLoadingMessage() {
 
     if (loading) {
         showLoadingMessage();
+        showReviewsLoading(); // 댓글 로딩 상태도 표시
     }
 
         fetch('/jembot/api/get-stock-info/', {
@@ -428,6 +429,7 @@ function convertMarkdownToHtml(markdown) {
         window.lastStockData = data;
 
         // 주식 정보가 업데이트되면 해당 주식의 댓글도 로드
+        showReviewsLoading(); // 댓글 로딩 상태 표시
         loadReviews();
     }
 
@@ -998,6 +1000,9 @@ function displayFavorites(favorites) {
         return;
     }
 
+    // 즐겨찾기가 있을 때는 empty-favorites 클래스 제거
+    favoritesContent.classList.remove('empty-favorites');
+    
     // 즐겨찾기 목록 HTML 생성
     let favoritesHtml = '';
     favorites.forEach(favorite => {
@@ -1040,11 +1045,15 @@ function displayFavorites(favorites) {
 function showEmptyFavorites() {
     const favoritesContent = document.getElementById('favorites-content');
     if (favoritesContent) {
+        // 즐겨찾기가 없을 때 중앙 정렬을 위한 클래스 추가
+        favoritesContent.classList.add('empty-favorites');
+        
         favoritesContent.innerHTML = `
             <div class="favorites-placeholder" style="text-align: center; padding: 20px; color: #666; font-size: 14px;">
                 <i class="bi bi-star" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
-                아직 즐겨찾기한 주식이 없습니다.<br>
-                메인 페이지에서 관심 있는 주식을 즐겨찾기해보세요!
+                즐겨찾기한<br> 
+                주식이 없습니다.<br>
+                주식을 즐겨찾기해보세요!
             </div>
         `;
     }
@@ -1080,6 +1089,7 @@ function handleFavoriteClick(event) {
     
     // 로딩 메시지 표시
     showLoadingMessage();
+    showReviewsLoading(); // 댓글 로딩 상태도 표시
     
     // KRX 코드를 사용해서 일반 검색 API 호출 (백엔드에서 코드로 회사명을 찾아서 처리)
     fetch('/jembot/api/get-stock-info/', {
@@ -1211,14 +1221,16 @@ function updateStockFavoriteIcon(iconElement, isFavorite) {
     console.log(`Stock 페이지 즐겨찾기 아이콘 업데이트: ${isFavorite ? '활성' : '비활성'}`);
     if (isFavorite) {
         iconElement.className = 'bi bi-star-fill';
-        iconElement.style.color = '#ffc107'; // 노란색
+        // CSS에서 색상을 관리하므로 인라인 스타일 제거
+        iconElement.style.color = '';
         iconElement.style.fontSize = '1.1rem';
     } else {
         iconElement.className = 'bi bi-star';
-        iconElement.style.color = '#6c757d'; // 회색
+        // CSS에서 색상을 관리하므로 인라인 스타일 제거
+        iconElement.style.color = '';
         iconElement.style.fontSize = '1.1rem';
     }
-    console.log('Stock 아이콘 클래스:', iconElement.className, '색상:', iconElement.style.color);
+    console.log('Stock 아이콘 클래스:', iconElement.className);
 }
 
 /**
@@ -1476,8 +1488,12 @@ async function loadReviews() {
         const data = await response.json();
         console.log('댓글 데이터:', data);
         if (data.success) {
-            displayReviews(data.reviews);
-            updateReviewCount(data.review_count);
+            if (data.reviews && data.reviews.length > 0) {
+                displayReviews(data.reviews);
+            } else {
+                showEmptyReviews();
+            }
+            updateReviewCount(data.review_count || 0);
         } else {
             console.error('댓글 로드 실패:', data.error);
             showEmptyReviews();
@@ -1499,6 +1515,11 @@ function displayReviews(reviews) {
     if (reviews.length === 0) {
         showEmptyReviews();
         return;
+    }
+    
+    // 리뷰가 있을 때는 empty-reviews 클래스 제거
+    if (reviewsContainer) {
+        reviewsContainer.classList.remove('empty-reviews');
     }
     
     let reviewsHtml = '';
@@ -1568,11 +1589,34 @@ function updateReviewCount(count) {
 }
 
 /**
+ * 댓글 로딩 상태를 표시합니다.
+ */
+function showReviewsLoading() {
+    const reviewsContainer = document.getElementById('reviews-container');
+    if (!reviewsContainer) return;
+    
+    // 로딩 상태에서도 중앙 정렬 클래스 추가
+    reviewsContainer.classList.add('empty-reviews');
+    
+    reviewsContainer.innerHTML = `
+        <div class="reviews-placeholder" style="text-align: center; padding: 20px; color: #666; font-size: 14px;">
+            <i class="bi bi-chat-dots" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+            댓글을 불러오는 중...
+        </div>
+    `;
+}
+
+/**
  * 빈 댓글 상태를 표시합니다.
  */
 function showEmptyReviews() {
     const reviewsContainer = document.getElementById('reviews-container');
     if (!reviewsContainer) return;
+    
+    // 리뷰가 없을 때 중앙 정렬을 위한 클래스 추가
+    if (reviewsContainer) {
+        reviewsContainer.classList.add('empty-reviews');
+    }
     
     reviewsContainer.innerHTML = `
         <div class="reviews-placeholder" style="text-align: center; padding: 20px; color: #666; font-size: 14px;">

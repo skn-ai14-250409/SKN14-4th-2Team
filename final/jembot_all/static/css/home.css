@@ -1,13 +1,6 @@
 .auth-container {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    min-height: 90vh;
-    padding: 20px;
-    overflow-y: visible;
-    height: auto;
-    position: relative;
-    margin: 20px 0;
     width: 100%;
 }
 
@@ -133,9 +126,7 @@
 /* 로그아웃 페이지 스타일 */
 .auth-form p {
     text-align: center;
-    margin-bottom: 30px;
     color: #666;
-    font-size: 16px;
 }
 
 /* 아이디 저장 체크박스 스타일 */

@@ -637,14 +637,16 @@ const updateFavoriteIcon = (iconElement, isFavorite) => {
     console.log(`즐겨찾기 아이콘 업데이트: ${isFavorite ? '활성' : '비활성'}`);
     if (isFavorite) {
         iconElement.className = 'bi bi-star-fill';
-        iconElement.style.color = '#ffc107'; // 노란색
+        // CSS에서 색상을 관리하므로 인라인 스타일 제거
+        iconElement.style.color = '';
         iconElement.style.fontSize = '1.2rem';
     } else {
         iconElement.className = 'bi bi-star';
-        iconElement.style.color = '#6c757d'; // 회색
+        // CSS에서 색상을 관리하므로 인라인 스타일 제거
+        iconElement.style.color = '';
         iconElement.style.fontSize = '1.2rem';
     }
-    console.log('아이콘 클래스:', iconElement.className, '색상:', iconElement.style.color);
+    console.log('아이콘 클래스:', iconElement.className);
 };
 
 /**
