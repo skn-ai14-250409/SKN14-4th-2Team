@@ -4,7 +4,7 @@
 {% endblock head %}
 
 <div class="header">
-    <div class="header__logo">
+    <div class="header__logo" onclick="location.href='/jembot/'">
         <img src="{% static 'images/robot-icon.png' %}" alt="Robot Icon" class="header__logo-image" />
         <div class="header__logo-name">JemBot</div>
     </div>
@@ -24,7 +24,59 @@
     </div>
     
     <div class="header__actions">
-        <div class="header__help">?</div>
-        <div class="header__login">Login</div>
+         
+        {% if user.is_authenticated %}
+            <div class="header__profile">
+                <div class="header__profile-image">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="프로필" class="profile-img">
+                    {% else %}
+                        <div class="profile-default">{{ user.name|first }}</div>
+                    {% endif %}
+                </div>
+                <div class="header__profile-dropdown">
+                    <div class="header__profile-name" onclick="toggleProfileMenu()">
+                        {{ user.name }} 님
+                        <i class="bi bi-chevron-down profile-arrow"></i>
+                    </div>
+                    <div class="profile-dropdown-menu" id="profileDropdown">
+                        <a href="{% url 'accounts:account_profile' %}" class="dropdown-item">
+                            <i class="bi bi-person"></i>
+                            마이페이지
+                        </a>
+                        <a href="{% url 'account_logout' %}" class="dropdown-item">
+                            <i class="bi bi-box-arrow-right"></i>
+                            로그아웃
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="header__login" onclick="location.href='{% url 'account_login' %}'">Login</div>
+        {% endif %}
+
+        <div class="header__help">?</div>   
     </div>
 </div>
+
+<script>
+function toggleProfileMenu() {
+    const dropdown = document.getElementById('profileDropdown');
+    const arrow = document.querySelector('.profile-arrow');
+    
+    dropdown.classList.toggle('show');
+    arrow.classList.toggle('rotated');
+}
+
+// 클릭 외부 영역에서 드롭다운 닫기
+document.addEventListener('click', function(event) {
+    const profileDropdown = document.querySelector('.header__profile-dropdown');
+    const dropdown = document.getElementById('profileDropdown');
+    const arrow = document.querySelector('.profile-arrow');
+    
+    if (profileDropdown && !profileDropdown.contains(event.target)) {
+        dropdown.classList.remove('show');
+        arrow.classList.remove('rotated');
+    }
+});
+</script>

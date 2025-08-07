@@ -2,6 +2,18 @@
 
 console.log('JavaScript 파일이 로드되었습니다!');
 
+// JS에서 대화 시작 시
+const now = new Date();
+if (now.getHours() < 12) {
+  const chatMessages = document.querySelector('.chat-messages');
+  if (chatMessages) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'jembot-message-time';
+    msgDiv.innerHTML = `JemBot Message<br>Today ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    chatMessages.prepend(msgDiv);
+  }
+}
+
 const sideButtonHandler = () => {
     const $buttons = document.querySelectorAll('#news-button, #stock-button');
     const $news_container = document.querySelector('#news-container');
@@ -169,6 +181,17 @@ const searchStock = async (query, period = '1m') => { // 기본 기간 파라미
         if (data.success) {
             currentStockQuery = query; // 검색 성공 시, 원본 검색어를 저장
             displayStockInfo(data);
+            
+            // 주식 검색 완료 이벤트 발생 (댓글 시스템에 알림)
+            console.log('main.js: 주식 검색 성공, 댓글 시스템에 알림 시작');
+            if (typeof window.onStockSearchCompleted === 'function') {
+                // data.code에서 .KS나 .KQ 제거하여 KRX 코드만 추출
+                const stockCode = data.code.replace(/\.(KS|KQ)$/, '');
+                console.log('main.js: 추출된 주식 코드:', stockCode, '원본:', data.code);
+                window.onStockSearchCompleted(stockCode);
+            } else {
+                console.log('main.js: onStockSearchCompleted 함수를 찾을 수 없음');
+            }
         } else {
             // 오류 메시지의 \n을 <br> 태그로 변환하여 줄바꿈을 적용합니다.
             const errorMessage = data.error.replace(/\\n/g, '<br>');
@@ -482,11 +505,575 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    searchButton.addEventListener('click', performSearch);
+    if (searchButton) {
+        searchButton.addEventListener('click', performSearch);
+    }
     
-    searchInput.addEventListener('keyup', function (event) {
-        if (event.key === 'Enter') {
-            performSearch();
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function (event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+    }
+});
+
+// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 대화 저장    ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+// let isFirstMessage = true;
+
+// function saveChatToList(message) {
+//     // AJAX로 서버에 저장 요청
+//     fetch('/jembot/save_chat/', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//             'X-CSRFToken': getCookie('csrftoken'),
+//         },
+//         body: JSON.stringify({ message }),
+//     });
+// }
+
+// document.querySelector('.chat-input__box input').addEventListener('keydown', function(e) {
+//     if (e.key === 'Enter' && this.value.trim() !== '') {
+//         if (isFirstMessage) {
+//             saveChatToList(this.value.trim());
+//             isFirstMessage = false;
+//         }
+//         sendMessage();
+//     }
+// });
+
+
+// document.querySelector('.chat-search-button button').addEventListener('click', function() {
+//     const input = document.querySelector('.chat-input__box input');
+//     if (input.value.trim() !== '') {
+//         if (isFirstMessage) {
+//             saveChatToList(input.value.trim());
+//             isFirstMessage = false;
+//         }
+//         sendMessage(); 
+//     }
+// });
+
+// // CSRF 토큰 가져오기 함수
+// function getCookie(name) {
+//     let cookieValue = null;
+//     if (document.cookie && document.cookie !== '') {
+//         const cookies = document.cookie.split(';');
+//         for (let i = 0; i < cookies.length; i++) {
+//             const cookie = cookies[i].trim();
+//             if (cookie.substring(0, name.length + 1) === (name + '=')) {
+//                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//                 break;
+//             }
+//         }
+//     }
+//     return cookieValue;
+// }
+// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 대화 저장 끝 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+// OpenAI 챗봇 기능
+const initializeChatbot = () => {
+    const chatInput = document.querySelector('.chat-input__box input');
+    const sendButton = document.querySelector('.chat-search-button button');
+    const chatMessages = document.querySelector('.chat-messages');
+    
+    if (!chatInput || !sendButton || !chatMessages) {
+        console.error('챗봇 요소를 찾을 수 없습니다.');
+        return;
+    }
+    
+    // 현재 채팅 세션 ID 저장
+    let currentSessionId = null;
+    let isNewSession = true;
+
+    // 메시지 전송 함수
+    const sendMessage = async () => {
+        const message = chatInput.value.trim();
+        if (!message) return;
+        
+        // 사용자 메시지 추가
+        addUserMessage(message);
+        chatInput.value = '';
+        
+        // 로딩 표시
+        const loadingId = addLoadingMessage();
+        
+        try {
+            // 선택된 레벨 확인
+            const activeButton = document.querySelector('.btn-group .btn-check:checked + .btn');
+            let selectedLevel = 'BASIC'; // 기본값
+            if (activeButton) {
+                const buttonText = activeButton.textContent.trim();
+                if (buttonText === '초급') {
+                    selectedLevel = 'BASIC';
+                } else if (buttonText === '중급') {
+                    selectedLevel = 'INTERMEDIATE';
+                } else if (buttonText === '고급') {
+                    selectedLevel = 'ADVANCED';
+                }
+            }
+
+            const requestBody = {
+                message: message,
+                session_id: currentSessionId,
+                is_new_session: isNewSession,
+                level: selectedLevel
+            };
+
+            const response = await fetch('/jembot/api/chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            const data = await response.json();
+            
+            // 로딩 메시지 제거
+            removeLoadingMessage(loadingId);
+            
+            if (data.response) {
+                addBotMessage(data.response, data.timestamp);
+                
+                // 세션 ID 업데이트 (첫 메시지인 경우)
+                if (data.session_id && !currentSessionId) {
+                    currentSessionId = data.session_id;
+                    isNewSession = false;
+                    console.log('새 채팅 세션 생성:', currentSessionId);
+                    
+                    // 채팅 세션 목록 업데이트
+                    loadChatSessions();
+                }
+            } else {
+                addBotMessage('죄송합니다. 응답을 생성하는 중에 오류가 발생했습니다.', data.timestamp);
+            }
+        } catch (error) {
+            console.error('챗봇 API 오류:', error);
+            removeLoadingMessage(loadingId);
+            addBotMessage('죄송합니다. 서버와의 연결에 문제가 발생했습니다.', formatTime(new Date()));
+        }
+    };
+    
+    // 사용자 메시지 추가
+    const addUserMessage = (message) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-user';
+        
+        const time = formatTime(new Date());
+        
+        messageDiv.innerHTML = `
+            <div class="chat-user__time">${time}</div>
+            <div class="chat-user__content">${message}</div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    };
+    
+    // 봇 메시지 추가
+    const addBotMessage = (message, timestamp) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-bot';
+        
+        // 활성화된 버튼 확인
+        const activeButton = document.querySelector('.btn-group .btn-check:checked + .btn');
+        let levelMark = '';
+        
+        if (activeButton) {
+            const buttonText = activeButton.textContent.trim();
+            if (buttonText === '초급') {
+                levelMark = '<div class="beginner_answer__mark">초급</div>';
+            } else if (buttonText === '중급') {
+                levelMark = '<div class="intermediate_answer__mark">중급</div>';
+            } else if (buttonText === '고급') {
+                levelMark = '<div class="advanced_answer__mark">고급</div>';
+            }
+        }
+        
+        messageDiv.innerHTML = `
+            ${levelMark}
+            <div class="chat-bot__content">${message}</div>
+            <div class="chat-bot__time">${timestamp}</div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    };
+
+    // 저장된 레벨과 함께 봇 메시지 추가
+    const addBotMessageWithLevel = (message, timestamp, level) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-bot';
+        
+        // 레벨에 따른 라벨 생성
+        let levelMark = '';
+        if (level === 'BASIC') {
+            levelMark = '<div class="beginner_answer__mark">초급</div>';
+        } else if (level === 'INTERMEDIATE') {
+            levelMark = '<div class="intermediate_answer__mark">중급</div>';
+        } else if (level === 'ADVANCED') {
+            levelMark = '<div class="advanced_answer__mark">고급</div>';
+        }
+        
+        messageDiv.innerHTML = `
+            ${levelMark}
+            <div class="chat-bot__content">${message}</div>
+            <div class="chat-bot__time">${timestamp}</div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    };
+    
+    // 로딩 메시지 추가
+    const addLoadingMessage = () => {
+        const loadingId = 'loading-' + Date.now();
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-bot';
+        messageDiv.id = loadingId;
+        
+        messageDiv.innerHTML = `
+            <div class="chat-bot__content">
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+        return loadingId;
+    };
+    
+    // 로딩 메시지 제거
+    const removeLoadingMessage = (loadingId) => {
+        const loadingElement = document.getElementById(loadingId);
+        if (loadingElement) {
+            loadingElement.remove();
+        }
+    };
+    
+    // 스크롤을 맨 아래로
+    const scrollToBottom = () => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    };
+    
+    // 이벤트 리스너 등록
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
         }
     });
+
+    // 채팅 세션 목록 로드
+    const loadChatSessions = async () => {
+        try {
+            const response = await fetch('/jembot/api/chat-sessions/', {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCsrfToken()
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                displayChatSessions(data.sessions);
+                return data.sessions; // 세션 목록 반환
+            } else {
+                console.error('채팅 세션 로드 실패:', data.error);
+                return [];
+            }
+        } catch (error) {
+            console.error('채팅 세션 로드 오류:', error);
+            return [];
+        }
+    };
+
+    // 채팅 세션 목록 표시
+    const displayChatSessions = (sessions) => {
+        const chatListContainer = document.getElementById('chatListContainer');
+        if (!chatListContainer) return;
+
+        // 기존 내용 지우기
+        chatListContainer.innerHTML = '';
+
+        if (sessions.length === 0) {
+            chatListContainer.innerHTML = '<div class="chat-list__empty">저장된 대화가 없습니다.</div>';
+            return;
+        }
+
+        sessions.forEach(session => {
+            const chatBox = document.createElement('div');
+            chatBox.className = 'chat-list__box';
+            chatBox.setAttribute('data-session-id', session.session_id); // 삭제 시 식별용
+            chatBox.innerHTML = `
+                <div class="chat-list__text">
+                    <div class="chat-list__title">${session.title}</div>
+                    <div class="chat-list__time">${formatDate(session.updated_at)}</div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                    <ul class="dropdown-menu">
+                        <li><button class="dropdown-item" type="button" onclick="shareSession('${session.session_id}')">Share</button></li>
+                        <li><button class="dropdown-item" type="button" onclick="renameSession('${session.session_id}')">Rename</button></li>
+                        <li><button class="dropdown-item" type="button" onclick="deleteSession('${session.session_id}')">Delete</button></li>
+                    </ul>
+                </div>
+            `;
+            
+            // 제목 클릭 시 대화 로드
+            const titleElement = chatBox.querySelector('.chat-list__text');
+            titleElement.addEventListener('click', () => loadChatSession(session.session_id));
+            titleElement.style.cursor = 'pointer';
+            
+            chatListContainer.appendChild(chatBox);
+        });
+    };
+
+    // 특정 채팅 세션 로드
+    const loadChatSession = async (sessionId) => {
+        try {
+            const response = await fetch(`/jembot/api/chat-messages/${sessionId}/`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCsrfToken()
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // 기존 대화 내용 지우기
+                chatMessages.innerHTML = '';
+                
+                // 세션 정보 업데이트
+                currentSessionId = sessionId;
+                isNewSession = false;
+                
+                // 메시지 표시
+                data.messages.forEach(message => {
+                    if (message.message_type === 'user') {
+                        addUserMessage(message.content);
+                    } else if (message.message_type === 'system') {
+                        // JemBot Message 표시
+                        addJemBotMessageFromContent(message.content);
+                    } else {
+                        // 환영 메시지는 전용 함수 사용
+                        if (message.content === '안녕하세요 무엇을 도와드릴까요?') {
+                            addWelcomeBotMessage(message.content, message.timestamp);
+                        } else {
+                            // 저장된 레벨과 함께 봇 메시지 표시
+                            addBotMessageWithLevel(message.content, message.timestamp, message.level);
+                        }
+                    }
+                });
+                
+                console.log('채팅 세션 로드 완료:', sessionId);
+            } else {
+                console.error('채팅 세션 로드 실패:', data.error);
+            }
+        } catch (error) {
+            console.error('채팅 세션 로드 오류:', error);
+        }
+    };
+
+    // 새 대화 시작
+    const startNewChat = () => {
+        currentSessionId = null;
+        isNewSession = true;
+        chatMessages.innerHTML = '';
+        
+        // JemBot 환영 메시지 추가
+        addInitialBotMessage();
+        
+        console.log('새 대화 시작');
+    };
+
+    // 초기 봇 메시지 추가 (새 대화 시작 시)
+    const addInitialBotMessage = () => {
+        const now = new Date();
+        const time = formatTime(now);
+        
+        // JemBot Message 표시 (항상 표시)
+        addJemBotMessage(now);
+        
+        addWelcomeBotMessage('안녕하세요 무엇을 도와드릴까요?', time);
+    };
+
+    // 환영 메시지 전용 (초급 라벨 없음)
+    const addWelcomeBotMessage = (message, timestamp) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-bot';
+        
+        messageDiv.innerHTML = `
+            <div class="chat-bot__content">${message}</div>
+            <div class="chat-bot__time">${timestamp}</div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    };
+
+    // JemBot Message 추가
+    const addJemBotMessage = (now) => {
+        const timeString = formatTime(now);
+        
+        const jembotDiv = document.createElement('div');
+        jembotDiv.className = 'chat-start__inside';
+        jembotDiv.innerHTML = `
+            <div class="jembot-message-time">
+                <span class="jembot-title">JemBot Message</span><br>
+                Today ${timeString}
+            </div>
+        `;
+        
+        chatMessages.appendChild(jembotDiv);
+    };
+
+    // 저장된 JemBot Message 내용으로 표시
+    const addJemBotMessageFromContent = (content) => {
+        const jembotDiv = document.createElement('div');
+        jembotDiv.className = 'chat-start__inside';
+        
+        // "JemBot Message" 부분에 스타일 적용
+        const formattedContent = content.replace(
+            'JemBot Message', 
+            '<span class="jembot-title">JemBot Message</span>'
+        ).replace('\n', '<br>');
+        
+        jembotDiv.innerHTML = `
+            <div class="jembot-message-time">
+                ${formattedContent}
+            </div>
+        `;
+        
+        chatMessages.appendChild(jembotDiv);
+    };
+
+    // 새 대화 버튼 이벤트 (있는 경우)
+    const newChatButton = document.querySelector('.new-chat-btn');
+    if (newChatButton) {
+        newChatButton.addEventListener('click', startNewChat);
+    }
+
+    // 로그인된 사용자인 경우 채팅 세션 로드
+    if (document.querySelector('meta[name="user-authenticated"]')) {
+        loadChatSessions().then(() => {
+            // 세션 로드 후 채팅창이 비어있으면 환영 메시지 표시
+            if (chatMessages.children.length === 0) {
+                addInitialBotMessage();
+            }
+        });
+    } else {
+        // 비로그인 사용자도 초기 환영 메시지 표시
+        addInitialBotMessage();
+    }
+
+    // 전역으로 함수 노출 (드롭다운에서 사용)
+    window.loadChatSessions = loadChatSessions;
+};
+
+// 시간 포맷팅 함수 (오후 08:00 형식)
+const formatTime = (date) => {
+    const hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const period = hours >= 12 ? '오후' : '오전';
+    const displayHours = String(hours % 12 || 12).padStart(2, '0');
+    
+    return `${period} ${displayHours}:${minutes}`;
+};
+
+// 날짜 포맷팅 함수
+const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0시는 12시로 표시
+    
+    return `${year}/${month}/${day} ${hours}:${minutes}${ampm}`;
+};
+
+// 세션 공유 기능
+const shareSession = (sessionId) => {
+    console.log('공유 기능:', sessionId);
+    // TODO: 세션 공유 기능 구현
+    alert('공유 기능은 곧 출시될 예정입니다.');
+};
+
+// 세션 이름 변경 기능
+const renameSession = (sessionId) => {
+    const newTitle = prompt('새로운 대화 제목을 입력하세요:');
+    if (newTitle && newTitle.trim()) {
+        console.log('이름 변경:', sessionId, newTitle);
+        // TODO: 세션 이름 변경 API 구현
+        alert('이름 변경 기능은 곧 출시될 예정입니다.');
+    }
+};
+
+// 세션 삭제 기능
+const deleteSession = async (sessionId) => {
+    if (confirm('정말로 이 대화를 삭제하시겠습니까?\n삭제된 대화는 복구할 수 없습니다.')) {
+        try {
+            const response = await fetch(`/jembot/api/chat-sessions/${sessionId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCsrfToken()
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // UI에서 해당 세션 제거
+                const chatBox = document.querySelector(`[data-session-id="${sessionId}"]`);
+                if (chatBox) {
+                    chatBox.remove();
+                }
+                
+                // 현재 보고 있는 대화가 삭제된 경우 채팅창 초기화
+                const currentSessionElement = document.querySelector('.current-session');
+                if (currentSessionElement && currentSessionElement.dataset.sessionId === sessionId) {
+                    const chatMessages = document.querySelector('.chat-messages');
+                    if (chatMessages) {
+                        chatMessages.innerHTML = '';
+                    }
+                    // 새 대화 모드로 변경
+                    if (typeof startNewChat === 'function') {
+                        startNewChat();
+                    }
+                }
+                
+                // 대화 목록 새로고침
+                if (window.loadChatSessions && typeof window.loadChatSessions === 'function') {
+                    window.loadChatSessions();
+                }
+                
+                alert('대화가 성공적으로 삭제되었습니다.');
+            } else {
+                alert('삭제 중 오류가 발생했습니다: ' + data.error);
+            }
+        } catch (error) {
+            console.error('세션 삭제 오류:', error);
+            alert('삭제 중 오류가 발생했습니다.');
+        }
+    }
+};
+
+// 페이지 로드 시 챗봇 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    initializeChatbot();
 });

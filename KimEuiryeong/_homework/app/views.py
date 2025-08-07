@@ -1,6 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
+from accounts.models import Stock, StockReview, StockFavorite, CustomUser
 import json
 from urllib.parse import quote
 import requests
@@ -9,9 +12,31 @@ from bs4 import BeautifulSoup
 import yfinance as yf
 from pykrx import stock as pykrx_stock
 import pandas as pd
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+from django.utils import timezone
 import numpy as np
 from .utils2.stock_node import handle_analysis_node
+from openai import OpenAI
+
+
+# OpenAI 클라이언트 설정
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+# 네이버 API 키 설정 (.env에서 불러오기)
+NAVER_CLIENT_ID = os.getenv('NAVER_CLIENT_ID')
+NAVER_CLIENT_SECRET = os.getenv('NAVER_CLIENT_SECRET')
+
+
+def chat_view(request):
+    now = timezone.localtime()
+    show_jembot_message = False
+    # 오늘 12시(정오) 이전에만 한 번만 표시
+    if now.hour < 12:
+        show_jembot_message = True
+    return render(request, 'chat.html', {
+        'show_jembot_message': show_jembot_message,
+        'now': now,
+    })
 
 # --- 별칭(Alias) 맵 ---
 # 자주 사용되는 한글/약칭을 공식 명칭으로 변환합니다.
@@ -188,15 +213,38 @@ def get_related_stocks(company_name, code):
         print(f"관련 종목 데이터 가져오기 오류: {e}")
         return []
 
-# --- 네이버 API 키 설정 ---
-NAVER_CLIENT_ID = "_UjwRjk7ehd5FauRIy01" 
-NAVER_CLIENT_SECRET = "CZlqMZvTnM"
 
 def chatbot(request):
-    return render(request, 'app/main.html')
+    from django.utils import timezone
+    
+    # 현재 날짜 가져오기
+    today = timezone.now().date()
+    
+    # 세션에서 마지막으로 JemBot 메시지를 본 날짜 확인
+    last_jembot_date = request.session.get('last_jembot_date')
+    
+    # 오늘 처음 접속하거나, 하루가 지났으면 JemBot 메시지 표시
+    show_jembot_message = False
+    if last_jembot_date is None or str(today) != last_jembot_date:
+        show_jembot_message = True
+        # 세션에 오늘 날짜 저장
+        request.session['last_jembot_date'] = str(today)
+    
+    return render(request, 'app/main.html', {
+        'show_jembot_message': show_jembot_message,
+        'now': timezone.now(),
+    })
 
 def stock(request):
-    return render(request, 'app/stock.html')
+    # 주식 페이지 접속 시 세션 초기화 (새로운 검색을 위해)
+    if 'current_stock' in request.session:
+        del request.session['current_stock']
+        
+    context = {
+        'current_stock': None,  # 항상 빈 상태로 시작
+        'user_authenticated': request.user.is_authenticated
+    }
+    return render(request, 'app/stock.html', context)
 
 def clean_html(html_string):
     """HTML 태그를 제거하고 텍스트만 반환합니다."""
@@ -485,6 +533,13 @@ def get_stock_info(request):
             for stock in related_stocks_data:
                 print(f"  - {stock['name']}: {stock['code']}")
 
+            # 현재 주식 정보를 세션에 저장
+            request.session['current_stock'] = {
+                'code': code,  # KRX 코드 저장
+                'name': company_name,
+                'yahoo_code': yahoo_code
+            }
+            
             response_data = {
                 'success': True,
                 'companyName': info.get('shortName', company_name),
@@ -637,3 +692,520 @@ def get_stock_rag(request):
     return JsonResponse({
         'answer': answer
     })
+
+@csrf_exempt
+def chat_with_openai(request):
+    """OpenAI API를 사용한 챗봇 대화 처리 및 대화 저장"""
+    from accounts.models import ChatSession, ChatMessage
+    import uuid
+    
+    print("=== chat_with_openai 함수 시작 ===")
+    print(f"OPENAI_API_KEY: {os.getenv('OPENAI_API_KEY')}")
+    
+    if request.method == 'POST':
+        try:
+            print("POST 요청 처리 시작")
+            data = json.loads(request.body)
+            user_message = data.get('message', '')
+            session_id = data.get('session_id', None)
+            is_new_session = data.get('is_new_session', False)
+            user_level = data.get('level', 'BASIC')  # 사용자가 선택한 레벨
+            
+            print(f"사용자 메시지: {user_message}")
+            print(f"세션 ID: {session_id}")
+            print(f"새 세션 여부: {is_new_session}")
+            
+            if not user_message:
+                print("메시지가 없음")
+                return JsonResponse({'error': '메시지가 없습니다.'}, status=400)
+            
+            # 채팅 세션 처리
+            chat_session = None
+            if request.user.is_authenticated:
+                if is_new_session or not session_id:
+                    # 새로운 세션 생성
+                    session_id = str(uuid.uuid4())
+                    # 사용자 메시지의 첫 10자를 제목으로 사용
+                    title = user_message[:10] + "..." if len(user_message) > 20 else user_message
+                    chat_session = ChatSession.objects.create(
+                        user=request.user,
+                        session_id=session_id,
+                        title=title
+                    )
+                    print(f"새 채팅 세션 생성: {session_id}, 제목: {title}")
+                    
+                    # JemBot Message 저장 (모든 새 대화마다)
+                    now = timezone.now()
+                    hour = now.hour
+                    minute = now.minute
+                    period = '오후' if hour >= 12 else '오전'
+                    display_hour = hour % 12 or 12
+                    jembot_time = f"{period} {display_hour:02d}:{minute:02d}"
+                    jembot_content = f"JemBot Message\nToday {jembot_time}"
+                    
+                    ChatMessage.objects.create(
+                        session=chat_session,
+                        message_type='system',  # system 타입으로 구분
+                        content=jembot_content,
+                        level='BASIC'
+                    )
+                    
+                    # 새 세션에 초기 환영 메시지 저장
+                    ChatMessage.objects.create(
+                        session=chat_session,
+                        message_type='bot',
+                        content='안녕하세요 무엇을 도와드릴까요?',
+                        level='BASIC'
+                    )
+                else:
+                    # 기존 세션 찾기
+                    try:
+                        chat_session = ChatSession.objects.get(
+                            session_id=session_id,
+                            user=request.user
+                        )
+                        print(f"기존 채팅 세션 사용: {session_id}")
+                    except ChatSession.DoesNotExist:
+                        print(f"세션 {session_id}를 찾을 수 없음, 새 세션 생성")
+                        session_id = str(uuid.uuid4())
+                        title = user_message[:20] + "..." if len(user_message) > 20 else user_message
+                        chat_session = ChatSession.objects.create(
+                            user=request.user,
+                            session_id=session_id,
+                            title=title
+                        )
+            
+            # 대화 히스토리 구성
+            messages = [
+                {
+                    "role": "system", 
+                    "content": "당신은 JemBot이라는 친근하고 도움이 되는 AI 어시스턴트입니다. 한국어로 대화하며, 사용자의 질문에 대해 명확하고 유용한 답변을 제공합니다. 재무제표나 주식 관련 질문에도 전문적으로 답변할 수 있습니다."
+                }
+            ]
+            
+            # 기존 세션이 있으면 대화 히스토리 추가
+            if chat_session and not is_new_session:
+                # 최근 10개 메시지만 가져와서 컨텍스트 유지 (토큰 제한 고려)
+                recent_messages = ChatMessage.objects.filter(
+                    session=chat_session
+                ).order_by('-timestamp')[:10]
+                
+                # 시간순으로 정렬 (오래된 것부터)
+                recent_messages = list(reversed(recent_messages))
+                
+                for msg in recent_messages:
+                    if msg.message_type == 'user':
+                        messages.append({
+                            "role": "user",
+                            "content": msg.content
+                        })
+                    elif msg.message_type == 'bot':
+                        # 환영 메시지는 히스토리에서 제외
+                        if msg.content != '안녕하세요 무엇을 도와드릴까요?':
+                            messages.append({
+                                "role": "assistant",
+                                "content": msg.content
+                            })
+            
+            # 현재 사용자 메시지 추가
+            messages.append({
+                "role": "user",
+                "content": user_message
+            })
+            
+            print(f"대화 히스토리 메시지 개수: {len(messages)}")
+
+            # OpenAI API 호출
+            try:
+                print("OpenAI API 호출 시작")
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=messages,
+                    max_tokens=1000,
+                    temperature=0.7
+                )
+                
+                print("OpenAI API 호출 성공")
+                bot_response = response.choices[0].message.content
+                print(f"봇 응답: {bot_response}")
+                
+                # 로그인된 사용자의 경우 대화 저장
+                if request.user.is_authenticated and chat_session:
+                    # 사용자 메시지 저장
+                    ChatMessage.objects.create(
+                        session=chat_session,
+                        message_type='user',
+                        content=user_message,
+                        level=user_level  # 사용자가 선택한 레벨
+                    )
+                    
+                    # 봇 응답 저장
+                    ChatMessage.objects.create(
+                        session=chat_session,
+                        message_type='bot',
+                        content=bot_response,
+                        level=user_level  # 사용자가 선택한 레벨
+                    )
+                    
+                    print(f"대화 저장 완료: 세션 {session_id}")
+                
+                # 한국 시간 포맷 (오후 08:00)
+                now = datetime.now()
+                hour = now.hour
+                minute = now.minute
+                period = '오후' if hour >= 12 else '오전'
+                display_hour = hour % 12 or 12
+                time_str = f"{period} {display_hour:02d}:{minute:02d}"
+                
+                return JsonResponse({
+                    'response': bot_response,
+                    'timestamp': time_str,
+                    'session_id': session_id if chat_session else None
+                })
+                
+            except Exception as e:
+                print(f"OpenAI API 오류: {str(e)}")
+                print(f"오류 타입: {type(e)}")
+                import traceback
+                print(f"Traceback: {traceback.format_exc()}")
+                return JsonResponse({
+                    'error': f'OpenAI API 오류: {str(e)}'
+                }, status=500)
+                
+        except json.JSONDecodeError as e:
+            print(f"JSON 디코딩 오류: {str(e)}")
+            return JsonResponse({'error': '잘못된 JSON 형식입니다.'}, status=400)
+        except Exception as e:
+            print(f"일반 오류: {str(e)}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
+            return JsonResponse({'error': f'서버 오류: {str(e)}'}, status=500)
+    
+    print("POST 요청이 아님")
+    return JsonResponse({'error': 'POST 요청만 허용됩니다.'}, status=405)
+
+@csrf_exempt 
+def get_chat_sessions(request):
+    """사용자의 채팅 세션 목록 조회"""
+    from accounts.models import ChatSession
+    from django.contrib.auth.decorators import login_required
+    
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '로그인이 필요합니다.'}, status=401)
+    
+    if request.method == 'GET':
+        try:
+            sessions = ChatSession.objects.filter(user=request.user).order_by('-updated_at')[:20]  # 최근 20개
+            session_list = []
+            
+            for session in sessions:
+                session_list.append({
+                    'session_id': session.session_id,
+                    'title': session.title,
+                    'created_at': session.created_at.strftime('%Y-%m-%d %H:%M'),
+                    'updated_at': session.updated_at.strftime('%Y-%m-%d %H:%M'),
+                    'message_count': session.messages.count()
+                })
+            
+            return JsonResponse({
+                'success': True,
+                'sessions': session_list
+            })
+            
+        except Exception as e:
+            print(f"채팅 세션 조회 오류: {str(e)}")
+            return JsonResponse({'error': f'서버 오류: {str(e)}'}, status=500)
+    
+    return JsonResponse({'error': 'GET 요청만 허용됩니다.'}, status=405)
+
+@csrf_exempt
+def get_chat_messages(request, session_id):
+    """특정 채팅 세션의 메시지 조회"""
+    from accounts.models import ChatSession, ChatMessage
+    
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '로그인이 필요합니다.'}, status=401)
+    
+    if request.method == 'GET':
+        try:
+            session = ChatSession.objects.get(session_id=session_id, user=request.user)
+            messages = ChatMessage.objects.filter(session=session).order_by('timestamp')
+            
+            message_list = []
+            for message in messages:
+                message_list.append({
+                    'id': message.id,
+                    'message_type': message.message_type,
+                    'content': message.content,
+                    'timestamp': message.timestamp.strftime('%H:%M'),
+                    'level': message.level
+                })
+            
+            return JsonResponse({
+                'success': True,
+                'session': {
+                    'session_id': session.session_id,
+                    'title': session.title,
+                    'created_at': session.created_at.strftime('%Y-%m-%d %H:%M')
+                },
+                'messages': message_list
+            })
+            
+        except ChatSession.DoesNotExist:
+            return JsonResponse({'error': '채팅 세션을 찾을 수 없습니다.'}, status=404)
+        except Exception as e:
+            print(f"채팅 메시지 조회 오류: {str(e)}")
+            return JsonResponse({'error': f'서버 오류: {str(e)}'}, status=500)
+    
+    return JsonResponse({'error': 'GET 요청만 허용됩니다.'}, status=405)
+
+@csrf_exempt
+def delete_chat_session(request, session_id):
+    """특정 채팅 세션 삭제"""
+    from accounts.models import ChatSession
+    
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '로그인이 필요합니다.'}, status=401)
+    
+    if request.method == 'DELETE':
+        try:
+            session = ChatSession.objects.get(session_id=session_id, user=request.user)
+            session.delete()  # 연관된 메시지들도 CASCADE로 함께 삭제됨
+            
+            return JsonResponse({
+                'success': True,
+                'message': '대화가 성공적으로 삭제되었습니다.'
+            })
+            
+        except ChatSession.DoesNotExist:
+            return JsonResponse({'error': '채팅 세션을 찾을 수 없습니다.'}, status=404)
+        except Exception as e:
+            print(f"채팅 세션 삭제 오류: {str(e)}")
+            return JsonResponse({'error': f'서버 오류: {str(e)}'}, status=500)
+    
+    return JsonResponse({'error': 'DELETE 요청만 허용됩니다.'}, status=405)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def add_stock_review(request):
+    """주식 댓글 작성 API"""
+    try:
+        # 로그인 체크
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'success': False,
+                'error': 'login_required',
+                'message': '댓글을 작성하려면 로그인이 필요합니다.'
+            }, status=401)
+        
+        data = json.loads(request.body)
+        stock_code = data.get('stock_code')
+        content = data.get('content', '').strip()
+        
+        # 주식 검색 여부 체크
+        if not stock_code:
+            return JsonResponse({
+                'success': False,
+                'error': 'stock_required',
+                'message': '댓글을 작성하려면 먼저 주식을 검색해주세요.'
+            }, status=400)
+        
+        # 댓글 내용 체크
+        if not content:
+            return JsonResponse({
+                'success': False,
+                'error': 'content_required',
+                'message': '댓글 내용을 입력해주세요.'
+            }, status=400)
+        
+        # Stock 객체 가져오거나 생성
+        stock, created = Stock.objects.get_or_create(
+            code=stock_code,
+            defaults={'name': stock_code}  # 기본값으로 코드를 이름으로 사용
+        )
+        
+        # 댓글 생성
+        review = StockReview.objects.create(
+            user=request.user,
+            stock=stock,
+            content=content
+        )
+        
+        # 현재 시각을 포맷팅
+        created_time = timezone.localtime(review.created_at)
+        
+        return JsonResponse({
+            'success': True,
+            'review': {
+                'id': review.id,
+                'content': review.content,
+                'user_name': request.user.name,
+                'user_nickname': request.user.nickname,
+                'created_at': created_time.strftime('%m월 %d일 %H:%M'),
+                'user_profile': request.user.profile_picture.url if request.user.profile_picture else None
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        print(f"댓글 작성 오류: {str(e)}")
+        return JsonResponse({'success': False, 'error': f'서버 오류: {str(e)}'}, status=500)
+
+
+@require_http_methods(["GET"])
+def get_stock_reviews(request, stock_code):
+    """특정 주식의 댓글 목록 가져오기"""
+    try:
+        stock = get_object_or_404(Stock, code=stock_code)
+        reviews = StockReview.objects.filter(stock=stock).order_by('-created_at')
+        
+        review_list = []
+        for review in reviews:
+            created_time = timezone.localtime(review.created_at)
+            review_list.append({
+                'id': review.id,
+                'content': review.content,
+                'user_name': review.user.name,
+                'user_nickname': review.user.nickname,
+                'created_at': created_time.strftime('%m월 %d일 %H:%M'),
+                'user_profile': review.user.profile_picture.url if review.user.profile_picture else None,
+                'can_delete': request.user.is_authenticated and request.user == review.user
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'reviews': review_list,
+            'count': len(review_list)
+        })
+        
+    except Exception as e:
+        print(f"댓글 목록 조회 오류: {str(e)}")
+        return JsonResponse({'success': False, 'error': f'서버 오류: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_stock_review(request, review_id):
+    """주식 댓글 삭제 API"""
+    try:
+        # 로그인 체크
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'success': False,
+                'error': '로그인이 필요합니다.'
+            }, status=401)
+        
+        review = get_object_or_404(StockReview, id=review_id)
+        
+        # 댓글 작성자 체크
+        if review.user != request.user:
+            return JsonResponse({
+                'success': False,
+                'error': '자신이 작성한 댓글만 삭제할 수 있습니다.'
+            }, status=403)
+        
+        review.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': '댓글이 성공적으로 삭제되었습니다.'
+        })
+        
+    except StockReview.DoesNotExist:
+        return JsonResponse({'success': False, 'error': '댓글을 찾을 수 없습니다.'}, status=404)
+    except Exception as e:
+        print(f"댓글 삭제 오류: {str(e)}")
+        return JsonResponse({'success': False, 'error': f'서버 오류: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def toggle_stock_favorite(request):
+    """주식 좋아요 토글 API"""
+    try:
+        # 로그인 체크
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'success': False,
+                'error': 'login_required',
+                'message': '좋아요를 누르려면 로그인이 필요합니다.'
+            }, status=401)
+        
+        data = json.loads(request.body)
+        stock_code = data.get('stock_code')
+        
+        if not stock_code:
+            return JsonResponse({
+                'success': False,
+                'error': 'stock_code_required',
+                'message': '주식 코드가 필요합니다.'
+            }, status=400)
+        
+        # Stock 객체 가져오거나 생성
+        stock, created = Stock.objects.get_or_create(
+            code=stock_code,
+            defaults={'name': stock_code}
+        )
+        
+        # 기존 좋아요 확인
+        favorite, created = StockFavorite.objects.get_or_create(
+            user=request.user,
+            stock=stock
+        )
+        
+        if created:
+            # 새로 좋아요 추가
+            is_favorited = True
+            action = 'added'
+        else:
+            # 기존 좋아요 제거
+            favorite.delete()
+            is_favorited = False
+            action = 'removed'
+        
+        # 총 좋아요 수 계산
+        total_likes = StockFavorite.objects.filter(stock=stock).count()
+        
+        return JsonResponse({
+            'success': True,
+            'is_favorited': is_favorited,
+            'total_likes': total_likes,
+            'action': action
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        print(f"주식 좋아요 토글 오류: {str(e)}")
+        return JsonResponse({'success': False, 'error': f'서버 오류: {str(e)}'}, status=500)
+
+
+@require_http_methods(["GET"])
+def get_stock_favorite_status(request, stock_code):
+    """주식 좋아요 상태 확인 API"""
+    try:
+        stock = get_object_or_404(Stock, code=stock_code)
+        
+        # 총 좋아요 수
+        total_likes = StockFavorite.objects.filter(stock=stock).count()
+        
+        # 현재 사용자가 좋아요 했는지 확인
+        is_favorited = False
+        if request.user.is_authenticated:
+            is_favorited = StockFavorite.objects.filter(
+                user=request.user,
+                stock=stock
+            ).exists()
+        
+        return JsonResponse({
+            'success': True,
+            'is_favorited': is_favorited,
+            'total_likes': total_likes
+        })
+        
+    except Exception as e:
+        print(f"주식 좋아요 상태 조회 오류: {str(e)}")
+        return JsonResponse({'success': False, 'error': f'서버 오류: {str(e)}'}, status=500)
+

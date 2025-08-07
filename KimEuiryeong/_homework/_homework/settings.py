@@ -11,9 +11,15 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 
 # Quick-start development settings - unsuitable for production
@@ -37,8 +43,22 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    'django.contrib.sites',   
+
     "app",
+    "accounts",
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.naver',
+    'allauth.socialaccount.providers.kakao',
 ]
+
+# 사이트 ID 설정 (필수)
+SITE_ID = 1
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -48,6 +68,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # 로그인 위해 추가한 부분 
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = "_homework.urls"
@@ -69,22 +91,28 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "_homework.wsgi.application"
 
+# 로그인 설정
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'djangodb',
-#         'USER' : 'jembot', # django 로 해
-#         'PASSWORD' : 'jembot', 
-#         'HOST' : '127.0.0.1',
-#         'PORT' : '3306',
-#         'OPTIONS': {
-#             'charset': 'utf8mb4',
-#         },
-#     }
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'jembotdb',
+        'USER' : 'jembot', # django 로 해
+        'PASSWORD' : 'jembot', 
+        'HOST' : '127.0.0.1',
+        'PORT' : '3306',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        },
+    }
 }
 
 
@@ -106,6 +134,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# 로그인 추가
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -125,6 +156,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / 'static', 
+    os.path.join(BASE_DIR, 'static'),
 ]
 
 
@@ -132,3 +164,83 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# 소셜 로그인 처리 시, django-allauth의 기본 기능 대신 우리가 직접 만든 어댑터 클래스를 사용하도록 지정합니다.
+SOCIALACCOUNT_ADAPTER = 'accounts.adapter.CustomSocialAccountAdapter'
+
+# Django의 인증 시스템이 기본 User 모델 대신 우리가 만든 accounts 앱의 CustomUser 모델을 사용하도록 지정합니다.
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# django-allauth가 사용자 모델에서 username으로 취급할 필드가 없다고 명시합니다. (이메일을 username처럼 사용하기 때문)
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None 
+
+# 최신 django-allauth 설정 (v0.57.0+)
+# 로그인 방법을 이메일로 설정
+ACCOUNT_LOGIN_METHODS = {'email'}
+
+# 회원가입 필드 설정 (이메일, 비밀번호1, 비밀번호2 필수)
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+
+# 소셜 계정으로 처음 로그인할 때, 별도의 확인 절차 없이 자동으로 회원가입을 완료합니다.
+SOCIALACCOUNT_AUTO_SIGNUP = True
+
+# 로그아웃을 완료한 후 이동할 URL의 이름을 'home'으로 지정합니다.
+ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
+
+# 로그인 성공 후 리디렉션할 URL을 jembot 페이지로 설정합니다.
+LOGIN_REDIRECT_URL = '/jembot/'
+
+# allauth의 로그인 후 리디렉션 URL 설정
+ACCOUNT_LOGIN_REDIRECT_URL = '/jembot/'
+
+# 회원가입 후 리디렉션할 URL 설정
+ACCOUNT_SIGNUP_REDIRECT_URL = '/jembot/'
+
+# 회원가입 후 이메일 인증 절차를 사용하지 않도록 설정합니다. ('mandatory'로 설정 시 인증 필요)
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+# 개발 및 테스트 편의를 위해, 소셜 로그인 과정을 GET 요청으로도 시작할 수 있도록 허용합니다.
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.getenv('GOOGLE_CLIENT_ID'),
+            'secret': os.getenv('GOOGLE_CLIENT_SECRET'),  
+            'key': ''
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    },
+    'naver': {
+        'SCOPE': [
+            'name',      
+            'email',     
+            'nickname' 
+        ],
+        'APP': {
+            'client_id': os.getenv("NAVER_CLIENT_ID"),
+            'secret': os.getenv("NAVER_CLIENT_SECRET"),
+            'key': '' 
+        }
+    },
+    'kakao': {
+        'SCOPE': [
+            'profile_nickname',
+            'account_email',
+            'profile_image',
+            'name'
+        ],
+        'APP': {
+            'client_id': os.getenv("KAKAO_CLIENT_ID"),
+            'secret': os.getenv("KAKAO_CLIENT_SECRET"),
+            'key': '' 
+        }
+    }
+}
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
