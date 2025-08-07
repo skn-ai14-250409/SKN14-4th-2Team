@@ -184,8 +184,9 @@ ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 # 소셜 계정으로 처음 로그인할 때, 별도의 확인 절차 없이 자동으로 회원가입을 완료합니다.
 SOCIALACCOUNT_AUTO_SIGNUP = True
 
-# 로그아웃을 완료한 후 이동할 URL의 이름을 'home'으로 지정합니다.
-ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
+# 로그아웃을 완료한 후 이동할 URL을 jembot 페이지로 지정합니다.
+ACCOUNT_LOGOUT_REDIRECT_URL = '/jembot/'
+LOGOUT_REDIRECT_URL = '/jembot/'
 
 # 로그인 성공 후 리디렉션할 URL을 jembot 페이지로 설정합니다.
 LOGIN_REDIRECT_URL = '/jembot/'

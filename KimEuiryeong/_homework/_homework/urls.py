@@ -24,7 +24,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('jembot/', include('app.urls')),
-    path('accounts/', include(('accounts.urls', 'accounts'), namespace='accounts')),
+    path('jembot/accounts/', include(('accounts.urls', 'accounts'), namespace='accounts')),
     path('accounts/', include('allauth.urls')),
     path('', RedirectView.as_view(url='/jembot/'), name='main'),
 ]

@@ -17,7 +17,7 @@ def home_view(request):
     로그인 폼 처리는 allauth가 담당합니다.
     """
     if request.user.is_authenticated:
-        return redirect('accounts:account_profile')
+        return redirect('accounts:mypage')
         
     form = LoginForm()
     return render(request, 'layout/home.html', {'form': form})
@@ -33,8 +33,8 @@ def signup_view(request):
             user = form.save()
             # 회원가입 후 자동 로그인 처리
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            # 여기도 함께 수정
-            return redirect('accounts:account_profile')
+            # 회원가입 후 챗봇 페이지로 리다이렉트 (settings.py의 ACCOUNT_SIGNUP_REDIRECT_URL과 동일)
+            return redirect('/jembot/')
     else:
         # GET 요청 시, 빈 회원가입 폼을 생성합니다.
         form = CustomUserCreationForm()

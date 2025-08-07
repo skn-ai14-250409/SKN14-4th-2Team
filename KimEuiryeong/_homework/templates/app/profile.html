@@ -12,7 +12,7 @@
 <div class="mypage-container">
     <div class="content-wrapper">
         <div class="profile-info-section">
-            <h1>마이페이지</h1>
+            <h4>마이페이지</h4>
             <div class="profile-header">
                 <div class="profile-pic-container">
                     {% if user.profile_picture %}
@@ -37,58 +37,60 @@
             </div>
         </div>
         <div class="account-management">
-            <h3>계정 관리</h3>
-            <div class="management-links">
-                <div class="management-item" id="emailItem">
-                    <div class="management-link" onclick="toggleEmailEdit()">
-                        <i class="bi bi-envelope"></i>
-                        <span>이메일 변경</span>
+            <div class = "management-inside">
+                <h3>계정 관리</h3>
+                <div class="management-links">
+                    <div class="management-item" id="emailItem">
+                        <div class="management-link" onclick="toggleEmailEdit()">
+                            <i class="bi bi-envelope"></i>
+                            <span>이메일 변경</span>
+                        </div>
+                        <div class="inline-edit" id="emailInlineEdit" style="display: none;">
+                            <input type="email" id="newEmail" placeholder="새 이메일 주소" class="inline-input">
+                            <div class="error-message" id="emailError" style="display: none;"></div>
+                        </div>
                     </div>
-                    <div class="inline-edit" id="emailInlineEdit" style="display: none;">
-                        <input type="email" id="newEmail" placeholder="새 이메일 주소" class="inline-input">
-                        <div class="error-message" id="emailError" style="display: none;"></div>
+                    
+                    <div class="management-item" id="passwordItem">
+                        <div class="management-link" onclick="togglePasswordEdit()">
+                            <i class="bi bi-lock"></i>
+                            <span>비밀번호 변경</span>
+                        </div>
+                        <div class="inline-edit" id="passwordInlineEdit" style="display: none;">
+                            <input type="password" id="newPassword" placeholder="새 비밀번호" class="inline-input">
+                            <input type="password" id="confirmPassword" placeholder="비밀번호 확인" class="inline-input">
+                            <div class="error-message" id="passwordError" style="display: none;"></div>
+                        </div>
                     </div>
+                    
+                    <div class="management-item" id="nicknameItem">
+                        <div class="management-link" onclick="toggleNicknameEdit()">
+                            <i class="bi bi-person-badge"></i>
+                            <span>닉네임 변경</span>
+                        </div>
+                        <div class="inline-edit" id="nicknameInlineEdit" style="display: none;">
+                            <input type="text" id="newNickname" placeholder="새 닉네임" class="inline-input">
+                            <div class="error-message" id="nicknameError" style="display: none;"></div>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'socialaccount_connections' %}" class="management-link">
+                        <i class="bi bi-link-45deg"></i>
+                        <span>계정 연결</span>
+                    </a>
                 </div>
                 
-                <div class="management-item" id="passwordItem">
-                    <div class="management-link" onclick="togglePasswordEdit()">
-                        <i class="bi bi-lock"></i>
-                        <span>비밀번호 변경</span>
-                    </div>
-                    <div class="inline-edit" id="passwordInlineEdit" style="display: none;">
-                        <input type="password" id="newPassword" placeholder="새 비밀번호" class="inline-input">
-                        <input type="password" id="confirmPassword" placeholder="비밀번호 확인" class="inline-input">
-                        <div class="error-message" id="passwordError" style="display: none;"></div>
-                    </div>
+                <!-- 저장/취소 버튼을 맨 아래에 배치 -->
+                <div class="edit-actions" id="editActions" style="display: none;">
+                    <button onclick="saveCurrentEdit()" class="btn-save">저장</button>
+                    <button onclick="cancelCurrentEdit()" class="btn-cancel">취소</button>
                 </div>
-                
-                <div class="management-item" id="nicknameItem">
-                    <div class="management-link" onclick="toggleNicknameEdit()">
-                        <i class="bi bi-person-badge"></i>
-                        <span>닉네임 변경</span>
-                    </div>
-                    <div class="inline-edit" id="nicknameInlineEdit" style="display: none;">
-                        <input type="text" id="newNickname" placeholder="새 닉네임" class="inline-input">
-                        <div class="error-message" id="nicknameError" style="display: none;"></div>
-                    </div>
-                </div>
-                
-                <a href="{% url 'socialaccount_connections' %}" class="management-link">
-                    <i class="bi bi-link-45deg"></i>
-                    <span>계정 연결</span>
-                </a>
-            </div>
-            
-            <!-- 저장/취소 버튼을 맨 아래에 배치 -->
-            <div class="edit-actions" id="editActions" style="display: none;">
-                <button onclick="saveCurrentEdit()" class="btn-save">저장</button>
-                <button onclick="cancelCurrentEdit()" class="btn-cancel">취소</button>
             </div>
         </div>
     </div>
 
     <div class="action-section">
-        <a href="{% url 'home' %}" class="btn-secondary">홈으로</a>
+        <a href="{% url 'app:chatbot' %}" class="btn-secondary">홈으로</a>
         <!-- 로그아웃 버튼에 id를 부여합니다 -->
         <a href="{% url 'account_logout' %}" id="logout-btn" class="btn-danger">로그아웃</a>
     </div>
