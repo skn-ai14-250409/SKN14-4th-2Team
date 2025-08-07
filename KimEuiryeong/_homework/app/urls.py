@@ -6,6 +6,8 @@ app_name = 'app'
 urlpatterns = [
     path('', views.chatbot, name='chatbot'),
     path('stock/', views.stock, name='stock'),
+    path('favorites/', views.favorites, name='favorites'),
+    
     path('api/crawl-news/', views.crawl_naver_news, name='crawl_news'),
     path('api/get-stock-info/', views.get_stock_info, name='get_stock_info'),
     path('api/chat/', views.chat_with_openai, name='chat_with_openai'),
@@ -20,4 +22,6 @@ urlpatterns = [
     # 주식 좋아요 관련 URL
     path('api/stock-favorite/toggle/', views.toggle_stock_favorite, name='toggle_stock_favorite'),
     path('api/stock-favorite/<str:stock_code>/', views.get_stock_favorite_status, name='get_stock_favorite_status'),
+    # 즐겨찾기 목록 관련 URL
+    path('api/favorites/', views.get_user_favorites, name='get_user_favorites'),
 ]

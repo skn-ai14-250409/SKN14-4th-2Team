@@ -40,11 +40,15 @@
                         <i class="bi bi-chevron-down profile-arrow"></i>
                     </div>
                     <div class="profile-dropdown-menu" id="profileDropdown">
-                        <a href="{% url 'accounts:account_profile' %}" class="dropdown-item">
+                        <a href="{% url 'accounts:mypage' %}" class="dropdown-item">
                             <i class="bi bi-person"></i>
                             마이페이지
                         </a>
-                        <a href="{% url 'account_logout' %}" class="dropdown-item">
+                        <a href="{% url 'app:favorites' %}" class="dropdown-item">
+                            <i class="bi bi-heart"></i>
+                            즐겨찾기
+                        </a>
+                        <a href="#" onclick="handleLogout(event)" class="dropdown-item">
                             <i class="bi bi-box-arrow-right"></i>
                             로그아웃
                         </a>
@@ -66,6 +70,38 @@ function toggleProfileMenu() {
     
     dropdown.classList.toggle('show');
     arrow.classList.toggle('rotated');
+}
+
+function handleLogout(event) {
+    event.preventDefault();
+    
+    if (confirm('정말 로그아웃하시겠습니까?')) {
+        // 로그아웃 폼 생성 및 제출
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "account_logout" %}';
+        
+        // CSRF 토큰 추가
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') || 
+                         document.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfToken.getAttribute('content') || csrfToken.value;
+            form.appendChild(csrfInput);
+        }
+        
+        // next 파라미터 추가 (로그아웃 후 이동할 페이지)
+        const nextInput = document.createElement('input');
+        nextInput.type = 'hidden';
+        nextInput.name = 'next';
+        nextInput.value = '/jembot/';
+        form.appendChild(nextInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
 }
 
 // 클릭 외부 영역에서 드롭다운 닫기

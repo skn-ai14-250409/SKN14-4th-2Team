@@ -1,0 +1,14 @@
+{% load socialaccount %}
+{% load static %}
+
+{% for provider in socialaccount_providers %}
+    {% if provider.id == "google" %}
+        <a href="{% provider_login_url 'google' %}"><img src="{% static 'images/google_icon.svg' %}" alt="Google 로그인"></a>
+    {% elif provider.id == "naver" %}
+        <a href="{% provider_login_url 'naver' %}"><img src="{% static 'images/naver_icon.png' %}" alt="Naver 로그인"></a>
+    {% elif provider.id == "kakao" %}
+        <a href="{% provider_login_url 'kakao' %}" style="text-decoration: none; color: #FEE500; background: #FEE500; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000;">카카오</a>
+    {% else %}
+        <a href="{% provider_login_url provider.id %}">{{ provider.name }}</a>
+    {% endif %}
+{% endfor %} 

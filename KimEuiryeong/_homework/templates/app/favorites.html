@@ -1,0 +1,42 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+
+{% block title %}즐겨찾기 - JemBot{% endblock %}
+
+{% block head %}
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta name="user-authenticated" content="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/app/favorites.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="favorites-container">
+    <div class="favorites-header">
+        <h1><i class="bi bi-heart-fill text-danger"></i> 내 즐겨찾기</h1>
+        <p class="favorites-subtitle">관심있는 주식들을 한눈에 확인하세요</p>
+    </div>
+
+    <div class="favorites-content">
+        <div class="favorites-loading" id="favoritesLoading" style="display: none;">
+            <i class="bi bi-hourglass-split"></i>
+            <div>즐겨찾기를 불러오는 중...</div>
+        </div>
+
+        <div class="favorites-empty" id="favoritesEmpty" style="display: none;">
+            <i class="bi bi-heart"></i>
+            <h3>아직 즐겨찾기한 주식이 없습니다</h3>
+            <p>관심있는 주식을 검색하고 하트 버튼을 눌러보세요!</p>
+            <a href="{% url 'stock' %}" class="btn-primary">주식 검색하러 가기</a>
+        </div>
+
+        <div class="favorites-grid" id="favoritesGrid"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/app/favorites.js' %}"></script>
+{% endblock %}

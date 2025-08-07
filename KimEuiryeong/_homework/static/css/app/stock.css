@@ -54,12 +54,25 @@
     column-gap: 0.5rem;
     padding: 10px;
     border-radius: 10px;
-    cursor: pointer;
     margin-bottom: 5px; 
 }
 
 .favorite-list__box:hover {
     background-color: var(--action-btn-color);
+}
+
+/* 즐겨찾기 정보 영역 (클릭 가능) */
+.favorite-info {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.favorite-info:hover {
+    opacity: 0.8;
+}
+
+.favorite-info:hover .favorite-list__title {
+    color: #007bff;
 }
 
 .favorite-list__title {
@@ -102,6 +115,7 @@
 .section-content {
     overflow-y: auto;
     padding-right: 5px; 
+    height: 100%;
 }
 /* 스크롤바 스타일링 */
 .section-content::-webkit-scrollbar {
@@ -179,12 +193,20 @@
 .favorite-heart:hover {
     background-color: #f8f9fa;
     border-color: #adb5bd;
+    transform: scale(1.05);
 }
 
 .favorite-heart.active {
     background-color: #e3f2fd;
     border-color: #2196f3;
     color: #2196f3;
+}
+
+.favorite-heart.active:hover {
+    background-color: #ffebee;
+    border-color: #adb5bd;
+    background-color: #f8f9fa;
+    color: #adb5bd;
 }
 
 .favorite-heart i {
@@ -213,6 +235,14 @@
 
 .delete-btn:hover {
     color: #333;
+}
+
+.empty-message {
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    padding: 20px 10px;
+    font-style: italic;
 }
 
 
@@ -520,7 +550,6 @@
     justify-content: space-between;
     align-items: flex-start;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e9ecef;
     gap: 20px;
 }
 
@@ -541,7 +570,7 @@
     display: flex;
     align-items: center;
     cursor: pointer;
-    padding: 3px 6px;
+    padding: 3px 6px 3px 10px;
     border-radius: 20px;
     transition: all 0.2s ease;
     background: #f8f9fa;
@@ -564,13 +593,13 @@
 }
 
 .stock-favorite-heart i {
-    font-size: 16px;
+    font-size: 12px;
     color: #6c757d;
     transition: color 0.2s ease;
 }
 
 .stock-favorite-heart .like-count {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
     color: #6c757d;
     min-width: 16px;
@@ -1018,7 +1047,7 @@
 }
 
 .chart-details {
-    width : 200px;
+    width : 220px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
