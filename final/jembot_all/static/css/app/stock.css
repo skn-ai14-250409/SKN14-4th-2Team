@@ -84,7 +84,7 @@
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    padding-top: 10px; 
+    padding-top: 20px; 
 }
 
 .accordion-icon {
@@ -102,6 +102,25 @@
 .section-content {
     overflow-y: auto;
     padding-right: 5px; 
+}
+
+/* 즐겨찾기가 없을 때 중앙 정렬 */
+.section-content.empty-favorites {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    min-height: 300px;
+}
+
+/* 리뷰가 없을 때 중앙 정렬 */
+.section-content.empty-reviews {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    flex: 1;
+    min-height: 300px;
 }
 /* 스크롤바 스타일링 */
 .section-content::-webkit-scrollbar {
@@ -471,14 +490,13 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    height: 100%;
 }
 
 .stock-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e9ecef;
     gap: 20px;
 }
 
@@ -839,6 +857,15 @@
     color: #6c757d !important;
 }
 
+/* 즐겨찾기 활성화 상태 */
+.stock-favorite-btn i.bi-star-fill {
+    color: #ffc107 !important;
+}
+
+.stock-favorite-btn:hover i.bi-star-fill {
+    color: #ffb300 !important;
+}
+
 .stock-price {
     text-align: right;
     min-width: 200px;
@@ -872,24 +899,24 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 20px;
+    padding: 20px;
+    padding-top: 100px;
     text-align: center;
-    background: #f8f9fa;
-    border-radius: 12px;
     width: 100%;
     height: 100%; 
-    min-height: 400px;
+    min-height: 300px;
 }
 
 .empty-state-icon {
-    font-size: 48px;
-    color: #6c757d;
-    margin-bottom: 20px;
+    font-size: 24px;
+    color: #666;
+    margin-bottom: 10px;
+    display: block;
 }
 
 .empty-state-text {
-    color: #6c757d;
-    font-size: 16px;
+    color: #666;
+    font-size: 14px;
     line-height: 1.5;
 }
 
@@ -955,7 +982,7 @@
 }
 
 .chart-details {
-    width : 200px;
+    width : 220px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -1008,24 +1035,18 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    text-align: center;
     color: #666;
     font-size: 14px;
     z-index: 10;
     background: rgba(255, 255, 255, 0.95);
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(0, 123, 255, 0.1);
-    pointer-events: none; /* 차트 클릭 방지 */
-    min-width: 180px; /* 최소 너비 설정 */
-    max-width: 250px; /* 최대 너비 제한 */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 10px;
+    text-align: center;
     white-space: nowrap; /* 텍스트 줄바꿈 방지 */
     line-height: 1;
     width: fit-content;
@@ -1038,17 +1059,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    width: 100%;
+    margin: 0 auto 10px auto;
     text-align: center;
+    width: 100%;
 }
 
 /* -- 주식 기다리는 로딩 아이콘 -- */
 .bi.bi-hourglass-split {
     width: 1em;
     height: 1em;
-    font-size: 48px;
-    margin-bottom: 20px;
+    font-size: 24px;
+    margin-bottom: 10px;
 }
 
 /* 로딩 메시지 컨테이너 스타일 */
@@ -1124,3 +1145,4 @@
 .jembot-summary-item h3:first-child {
     margin-top: 0;
 }
+

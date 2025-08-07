@@ -16,6 +16,7 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 from .models import CustomUser, ChatSession, ChatMessage, Stock, StockFavorite, StockReview, StockReviewLike
 from .utils2.stock_node import handle_analysis_node
+from .utils2.main import run_langraph
 
 # --- 별칭(Alias) 맵 ---
 # 자주 사용되는 한글/약칭을 공식 명칭으로 변환합니다.
@@ -945,7 +946,6 @@ def chat_api(request):
         
         try:
             # utils2.main의 run_langraph 함수 임포트 시도
-            from .utils2.main import run_langraph
             response = run_langraph(user_message, session_id, level, db_chat_history)
             
             # 응답에서 실제 답변 추출

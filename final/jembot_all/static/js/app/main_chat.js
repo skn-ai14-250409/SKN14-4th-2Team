@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // 초기 채팅 메시지 설정
 function initializeChatMessages() {
     clearChatMessages();
-    addBotMessage('안녕하세요! 무엇을 도와드릴까요?');
+    addBotMessage('안녕하세요! 무엇을 도와드릴까요?', null);
 }
 
 // 이벤트 리스너 초기화
@@ -360,7 +360,7 @@ async function loadChatHistory(sessionId) {
                 });
             } else {
                 // 히스토리가 없으면 기본 환영 메시지
-                addBotMessage('안녕하세요! 무엇을 도와드릴까요?');
+                addBotMessage('안녕하세요! 무엇을 도와드릴까요?', null);
             }
             
             console.log('채팅 히스토리 로드 완료. 현재 세션:', currentSessionId);
@@ -439,6 +439,7 @@ function addBotMessage(message, level = 'basic') {
     
     console.log('봇 메시지 레벨:', level);
     
+    // level이 null이 아닌 경우에만 레벨 마크를 표시
     if (level === 'intermediate') {
         levelMark = '<div class="intermediate_answer__mark">중급</div>';
         levelClass = ' id="intermediate_answer"';
@@ -449,6 +450,7 @@ function addBotMessage(message, level = 'basic') {
         levelMark = '<div class="beginner_answer__mark">초급</div>';
         levelClass = ' id="beginner_answer"';
     }
+    // level이 null인 경우 levelMark와 levelClass는 빈 문자열로 유지
     
     // 마크다운을 HTML로 변환
     const renderedMessage = renderMarkdown(message);
