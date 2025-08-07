@@ -124,6 +124,20 @@ LLM의 널리지 컷오프 특성상 최신정보를 알기어렵기때문에 �
 | **Collaboration Tool** | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)                                                                                                                                                                                                             |
 | **Vector DB** | ![FAISS](https://img.shields.io/badge/FAISS-4B8BEA?style=for-the-badge&logo=facebook&logoColor=white) ![Pinecone](https://img.shields.io/badge/Pinecone-3B77DD?style=for-the-badge&logo=pinecone&logoColor=white)                                                                                        |
 | **API 활용** | ![Open Dart API](https://img.shields.io/badge/Open%20DART%20API-002D61?style=for-the-badge&logoColor=white)                                                                                                                                                                                              |
+
+• yfinance                                                                      │
+│    - Yahoo Finance API                                                          │
+│    - 실시간 주식 데이터                                                          │
+│    - 주가, 거래량, 재무정보                                                      │
+│                                                                                 │
+│  • pykrx                                                                        │
+│    - 한국 주식 데이터                                                            │
+│    - KOSPI, KOSDAQ 정보                                                         │
+│    - 한국 기업 재무정보                                                          │
+│
+
+
+
 <hr>
 
 ```markdown
@@ -233,25 +247,90 @@ SKN14-3rd-2Team/
 - **파일 요약**: 정보 검색 시스템을 설정하는 파일입니다. 저장된 문서 데이터베이스를 불러와, 사용자의 질문 의도와 가장 관련성 높은 문서를 효율적으로 찾아주는 '리트리버'를 준비하는 역할을 합니다.
 
 ### 흐름
+## 1. 사용자 인증 흐름 (일반 로그인 및 소셜 로그인)
 
-**"삼성전자 2024년 실적이 어때" 질문 처리 순서**<br>
-1. 유형 분류: chain_setting.py의 classification_chain이 질문을 'finance' 유형으로
-분류하고, handle_node.py의 handle_financial 함수를 호출합니다.
+### 🔐 소셜 로그인 흐름:
 
+```
+사용자
+  ↓
+소셜 로그인 API (Google/Kakao/Naver)
+  ↓
+Django Allauth 인증
+  ↓
+세션 생성
+  ↓
+Django 메인 서버
+  ↓
+사용자 대시보드
+```
 
-2. 정보 추출: chain_setting.py의 extract_chain이 질문에서 '삼성전자'와 '2024년'을 추출합니다.
+---
 
+### 🔑 일반 로그인 흐름 (이메일/비밀번호):
 
-3. 코드 변환: normalize_code_search.py의 find_corporation_code 함수가 '삼성전자'를 
-DART에서 사용하는 고유 기업 코드로 변환합니다.
+```
+사용자 (이메일 / 비밀번호 입력)
+  ↓
+Django Allauth 인증 (이메일 / 비밀번호 확인)
+  ↓
+세션 생성
+  ↓
+Django 메인 서버
+  ↓
+사용자 대시보드
+```
+## 2. 챗봇 답변 흐름
 
+```
+사용자 질문
+  ↓
+Django 서버
+  ↓
+LangGraph
+  ↓
+FAISS 벡터 DB / DART Open API (재무제표)
+  ↓
+OpenAI GPT-4o
+  ↓
+챗봇 응답
+```
+## 3. 주식 정보 요청 흐름(주식검색)
 
-4. 데이터 조회: api_get.py의 get_financial_state 함수가 기업 코드와 연도를 이용해 
-DART 서버에서 실시간 재무제표 데이터를 조회합니다.
+```
+사용자 주식 검색
+  ↓
+Django 서버
+  ↓
+yfinance/ pykrx(주식검색)
+  ↓
+실시간 주식 데이터 변환
+  ↓
+사용자에게 결과제공
+```
+## 4. 뉴스 정보 요청 흐름
+```
+사용자 요청
+  ↓
+Django 서버
+  ↓
+네이버 뉴스 Open API
+  ↓
+Beautiful Soup(크롤링)
+  ↓
+실시간 뉴스 정보 제공
+```
 
-
-5. 답변 생성: chain_setting.py의 financial_chain이 조회된 실제 데이터를 바탕으로 
-최종 실적 분석 답변을 생성하여 사용자에게 보여줍니다.
+## 5 주식 리포트 제공 흐름
+```
+사용자 요청
+  ↓
+Django 서버
+  ↓
+RAG (FAISS 벡터 DB / DART Open API)
+  ↓
+주식 분석 리포트 제공
+```
 
 ## 6️⃣ Django WEBAPP 구현
 
