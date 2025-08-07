@@ -1,0 +1,252 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block head %}
+    {{ block.super }}
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <link rel="stylesheet" href="{% static "css/app/main.css" %}">
+    <script src="{% static "js/app/chat.js" %}" defer></script>
+{% endblock head %}
+
+{% block title %}chatbot{% endblock title %}
+
+{% block content %}
+    <div class = "chat-container">
+        <div class = "chat-list">
+            <!-- 사용자 정보 섹션 -->
+            <div class="user-info-section">
+                <div class="user-profile">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture }}" alt="프로필" class="user-avatar">
+                    {% else %}
+                        <div class="user-avatar-placeholder">{{ user.first_name|first|upper }}</div>
+                    {% endif %}
+                    <div class="user-details">
+                        <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="user-email">{{ user.email }}</div>
+                    </div>
+                    <div class="user-actions">
+                        <a href="{% url 'jembot:logout' %}" class="logout-btn" title="로그아웃">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class = "chat-list__add">
+                <div class = "chat-list__name">대화 목록</div>
+                <div class = "chat-add-button">
+                    <button type="button" class="btn btn-outline-secondary" id="new-chat-btn">+</button>
+                </div>
+            </div>
+            
+            <div class = "chat-list__item" id="chat-sessions-container">
+                <div class = "chat-list__empty" id="empty-sessions">저장된 대화가 없습니다.</div>
+            </div>
+            
+
+            <div class = 'btn-group__container'>
+                <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                    <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+                    <label class="btn btn-outline-primary" for="btnradio1">초급</label>
+                  
+                    <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="btnradio2">중급</label>
+                  
+                    <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="btnradio3">고급</label>
+                </div>
+            </div>
+        </div>
+        <div class = "chat-window">
+            <div class="chat-messages" id="chat-messages">
+                <div class="chat-start__container">
+                    <div class = "chat-start__inside">
+                    </div>
+                </div>
+                <div class="chat-bot">
+                    <div class = "chat-bot__content">안녕하세요 {{ user.get_full_name|default:user.username }}님! 무엇을 도와드릴까요?</div>
+                    <div class = "chat-bot__time">14:36</div>
+                </div>
+            </div>
+            <div class="chat-input__container">
+                <div class = "chat-input">
+                    <div class = "chat-input__box">
+                        <input type="text" placeholder="재무 데이터 rag에게 물어보기..." id="chat-input" />
+                    </div>
+                    <div class="chat-search">
+                        <div class="chat-search-button">
+                            <button type="button" class="btn btn-outline-secondary" id="send-btn">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class = "additional_info">
+            <div class = "choices">
+                <div class = "news">
+                    <div class = "news-button"><button id = "news-button" type="button" class="btn btn-outline-secondary">뉴스</button></div>
+                </div>
+                <div class = "stock">
+                    <div class = "stock-button"><button id = "stock-button" type="button" class="btn btn-outline-secondary">주식</button></div>
+                </div>
+    
+            </div>
+            <div class="choices-info">
+                <div class = "news-container" id = "news-container">
+                    <!-- 뉴스 데이터가 동적으로 로드됩니다 -->
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-message">뉴스를 불러오는 중...</div>
+                    </div>
+
+                </div>
+                <div class="stock-container" id = "stock-container">
+                    <!-- 주식 데이터가 검색 후 동적으로 로드됩니다 -->
+                    <div class="loading-container" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-message">주식 정보를 불러오는 중...</div>
+                    </div>
+                    <div class="stock-placeholder">
+                        <div class="placeholder-message">주식명을 검색해보세요</div>
+                        <div class="placeholder-example">예: 삼성전자, NAVER, LG화학</div>
+                    </div>
+                </div>
+            </div>
+            <div class="choices-input__container">
+                <div class = "choices-input">
+                    <div class = "choices-input__box">
+                        <input type="text" placeholder="뉴스 검색" id="search-input" />
+                    </div>
+                    <div class="choices-search">
+                        <div class="choices-search-button">
+                            <button type="button" class="btn btn-outline-secondary" id="search-button">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 사용자 정보 스타일 -->
+    <style>
+    .user-info-section {
+        padding: 15px;
+        border-bottom: 1px solid #e0e0e0;
+        background: #f8f9fa;
+    }
+    
+    .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .user-avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #007bff;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 16px;
+    }
+    
+    .user-details {
+        flex: 1;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+    }
+    
+    .user-email {
+        color: #666;
+        font-size: 12px;
+    }
+    
+    .user-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .logout-btn {
+        color: #666;
+        text-decoration: none;
+        padding: 4px;
+        border-radius: 4px;
+        transition: color 0.2s;
+    }
+    
+    .logout-btn:hover {
+        color: #dc3545;
+    }
+    
+    .chat-session-item {
+        padding: 10px 15px;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        position: relative;
+    }
+    
+    .chat-session-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .chat-session-item.active {
+        background-color: #e3f2fd;
+        border-left: 3px solid #007bff;
+    }
+    
+    .session-title {
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+    
+    .session-time {
+        color: #666;
+        font-size: 12px;
+    }
+    
+    .session-delete {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    
+    .chat-session-item:hover .session-delete {
+        opacity: 1;
+    }
+    
+    .session-delete:hover {
+        color: #dc3545;
+    }
+    </style>
+    
+{% endblock content %}
+
