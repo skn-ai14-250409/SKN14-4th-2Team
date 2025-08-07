@@ -59,9 +59,9 @@ LLM의 널리지 컷오프 특성상 최신정보를 알기어렵기때문에 �
 | 작업명          | 담당자       | 산출물          |
 |:-------------|:----------|:-------------|
 | 프로젝트 주제 선정   | 전체 팀원     |              |
-| 로그인 기능 | 강윤구 , 김광령     | CSV 파일,벡터DB, RDB       |
-| 랭그래프 개발        | 정민영       | 파이썬 파일       |
-| Django 개발 | 전체팀원  | Streamlit 파일 |
+| 로그인 기능 | 강윤구 , 김광령     |   RDB       |
+| 랭그래프 개발        | 정민영       | 파이썬 파일,벡터DB     |
+| Django 개발 | 정민영, 김의령  | html,css 파일 |
 | README 작성    | 전정규      | README.md 파일 |
 | ppt 제작       | 강윤구, 이원지희 | PPT          |
 | 발표           | 강윤구       |              |
@@ -124,7 +124,7 @@ LLM의 널리지 컷오프 특성상 최신정보를 알기어렵기때문에 �
 | **LLM Model**     | ![GPT-4o](https://img.shields.io/badge/GPT--4o-4B91FF?style=for-the-badge&logo=openai&logoColor=white)                                                                                                                                                                                                                                              |
 | **Collaboration Tool** | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)                                                                                                                                                                                                                                                  |
 | **Vector DB**     | ![FAISS](https://img.shields.io/badge/FAISS-4B8BEA?style=for-the-badge&logo=facebook&logoColor=white) ![Pinecone](https://img.shields.io/badge/Pinecone-3B77DD?style=for-the-badge&logo=pinecone&logoColor=white)                                                                                                                                |
-| **API 활용**      | ![Open Dart API](https://img.shields.io/badge/Open%20DART%20API-002D61?style=for-the-badge&logoColor=white) <br> ![Yahoo Finance](https://img.shields.io/badge/yfinance-144E8C?style=for-the-badge&logo=yahoo&logoColor=white) <br> ![PyKRX](https://img.shields.io/badge/pykrx-1F9F3F?style=for-the-badge&logoColor=white) <br> ![Naver News](https://img.shields.io/badge/Naver%20News%20Crawling-03C75A?style=for-the-badge&logo=naver&logoColor=white) |
+| **API 활용**      | ![Open Dart API](https://img.shields.io/badge/Open%20DART%20API-002D61?style=for-the-badge&logoColor=white) <br> ![Yahoo Finance](https://img.shields.io/badge/yfinance-144E8C?style=for-the-badge&logo=yahoo&logoColor=white) <br> ![PyKRX](https://img.shields.io/badge/pykrx-1F9F3F?style=for-the-badge&logoColor=white) <br> ![Naver News](https://img.shields.io/badge/Naver%20News%20Crawling-03C75A?style=for-the-badge&logo=naver&logoColor=white) ![Google API](https://img.shields.io/badge/Google%20Login%20API-4285F4?style=for-the-badge&logo=google&logoColor=white) <br> ![Naver API](https://img.shields.io/badge/Naver%20Login%20API-03C75A?style=for-the-badge&logo=naver&logoColor=white) <br> ![Kakao API](https://img.shields.io/badge/Kakao%20Login%20API-FFCD00?style=for-the-badge&logo=kakao&logoColor=black) <br>|
 
 
 <hr>
@@ -277,7 +277,7 @@ JEONGMINYOUNG
 
 **3. 적절한 데이터 소스 선택 및 검색**<br>
 **질문 유형에 따라 다음과 같은 방식으로 데이터를 찾습니다.**
-- 벡터 검색 : 사업보고서 같은 비정형 텍스트는 chunk 단위로 나눠 임베딩하고, Pinecone 또는 FAISS 같은 벡터 DB에 저장해 둡니다.
+- 벡터 검색 : 사업보고서 같은 비정형 텍스트는 chunk 단위로 나눠 임베딩하고, FAISS 벡터 DB에 저장해 둡니다.
 
 
 - DART API 활용 : 공시된 재무제표나 정형 데이터는 DART Open API를 통해 호출합니다.<br>
@@ -311,18 +311,15 @@ JEONGMINYOUNG
 
 ---
 
-#### 3. `handle_node.py`
-- `handle_accounting(question)`: 회계 기준서 데이터베이스에서 질문과 관련된 내용을 검색해 답변을 생성합니다.
-- `handle_business(question)`: 사업보고서 데이터베이스에서 질문과 관련된 내용을 검색해 답변을 생성합니다.
-- `handle_financial(question)`: 질문에서 회사명과 연도를 추출하고, DART API로 재무 데이터를 조회해 
+#### 3. `graph_node.py`
+- `handle_accounting1/2/3(state)`: 회계 기준서 데이터베이스에서 질문과 관련된 내용을 검색해 답변을 생성합니다.
+- `handle_business1/2/3(state)`: 사업보고서 데이터베이스에서 질문과 관련된 내용을 검색해 답변을 생성합니다.
+- `handle_financial1/2/3(state)`: 질문에서 회사명과 연도를 추출하고, DART API로 재무 데이터를 조회해 
 답변을 생성합니다.
-- `handle_hybrid(question)`: 위 세 가지 작업을 모두 수행하여 API 데이터와 내부 검색 결과를 종합한 
+- `handle_hybrid1/2/3(state)`: 위 세 가지 작업을 모두 수행하여 API 데이터와 내부 검색 결과를 종합한 
 심층 분석 답변을 생성합니다.
-- `elief(question)`: 회계와 관련 없는 일반적인 질문을 처리합니다.
-- **파일 요약**: 분류된 질문 유형에 따라 실제 작업을 지휘하는 '핸들러' 함수 모음입니다. 각 함수는 데이터 
-검색, API 호출 등 필요한 작업을 수행하고, 수집된 모든 정보를 적절한 '체인'에 넘겨 최종 답변을 생성하는 처리 
-허브입니다.
-
+- `elief(state)`: 회계와 관련 없는 일반적인 질문을 처리합니다.
+- **파일 요약**: 상태 기반 워크플로우에서 분류된 질문 유형과 난이도에 따라 실제 작업을 수행하는 노드 함수 모음입니다. 각 함수는 ChatState를 받아 데이터 검색, API 호출 등 필요한 작업을 수행하고, 수집된 모든 정보를 적절한 '체인'에 넘겨 최종 답변을 생성합니다.
 ---
 
 #### 4. `normalize_code_search.py`
@@ -344,15 +341,17 @@ JEONGMINYOUNG
 
 ```
 사용자
-  ↓
-소셜 로그인 API (Google/Kakao/Naver)
-  ↓
-Django Allauth 인증
-  ↓
+    ↓
+Django 서버 (소셜 로그인 버튼 클릭)
+    ↓
+소셜 로그인 API (Google/Kakao/Naver) - 외부 사이트로 리디렉션
+    ↓
+사용자 인증 완료 후 Django로 콜백
+    ↓
+Django Allauth가 인증 코드 처리 & 사용자 정보 가져오기
+    ↓
 세션 생성
-  ↓
-Django 메인 서버
-  ↓
+    ↓
 사용자 대시보드
 ```
 
@@ -361,65 +360,75 @@ Django 메인 서버
 ### 🔑 일반 로그인 흐름 (이메일/비밀번호):
 
 ```
-사용자 (이메일 / 비밀번호 입력)
-  ↓
-Django Allauth 인증 (이메일 / 비밀번호 확인)
-  ↓
+사용자 (이메일/비밀번호 입력)
+    ↓
+Django Allauth 인증 (DB에서 이메일/비밀번호 확인)
+    ↓
 세션 생성
-  ↓
-Django 메인 서버
-  ↓
+    ↓
 사용자 대시보드
 ```
 ## 2. 챗봇 답변 흐름
 
 ```
 사용자 질문
-  ↓
-Django 서버
-  ↓
+     ↓
+Django 서버 (웹 인터페이스)
+     ↓
 LangGraph
-  ↓
-FAISS 벡터 DB / DART Open API (재무제표)
-  ↓
-OpenAI GPT-4o
-  ↓
+     ↓ (질문 분류 & 회사명/연도 추출)
+OpenAI GPT-4o (분류/추출 작업)
+     ↓
+병렬 처리:
+   ├── FAISS 벡터 DB (회계기준서/사업보고서 검색)
+   └── DART Open API (실시간 재무제표 조회)
+     ↓
+수집된 모든 데이터 + 프롬프트
+     ↓
+OpenAI GPT-4o (최종 답변 생성)
+     ↓
+Django 서버
+     ↓
 챗봇 응답
 ```
 ## 3. 주식 정보 요청 흐름(주식검색)
 
 ```
 사용자 주식 검색
-  ↓
+    ↓
 Django 서버
-  ↓
-yfinance/ pykrx(주식검색)
-  ↓
-실시간 주식 데이터 변환
-  ↓
-사용자에게 결과제공
+    ↓
+yfinance / pykrx (주식 데이터 조회)
+    ↓
+데이터 가공 및 포맷팅
+    ↓
+사용자에게 결과 제공
 ```
 ## 4. 뉴스 정보 요청 흐름
 ```
 사용자 요청
-  ↓
+    ↓
 Django 서버
-  ↓
-네이버 뉴스 Open API
-  ↓
-Beautiful Soup(크롤링)
-  ↓
-실시간 뉴스 정보 제공
+    ↓
+네이버 뉴스 Open API (또는 크롤링)
+    ↓
+Beautiful Soup (HTML 파싱/데이터 정제)
+    ↓
+뉴스 정보 제공
 ```
 
 ## 5 주식 리포트 제공 흐름
 ```
-사용자 요청
-  ↓
+사용자 요청 (기업명)
+    ↓
 Django 서버
-  ↓
-RAG (FAISS 벡터 DB / DART Open API)
-  ↓
+    ↓
+LangGraph 워크플로우 실행
+    ↓
+FAISS 벡터 DB (사업보고서) + DART API (재무제표)
+    ↓
+OpenAI GPT-4o (분석 리포트 생성)
+    ↓
 주식 분석 리포트 제공
 ```
 
@@ -437,16 +446,18 @@ RAG (FAISS 벡터 DB / DART Open API)
 
 
 ### 추가 구현 사항
-**채팅창 옆에 뉴스와 주식을 볼 수 있는 칸을 구현하여 기업에 관한 정보를 많이 습득할 수 있도록 하였습니다.**
-#### 1. 관심기업 및 종합보고서 기능 그리고 주식조회와 왼쪽의 댓글코멘트와 좋아요의 기능을 추가
-<img src="image/결과3.png" width="auto" alt="결과3"/><br>
-- 밑의 입력창에 기업명을 적으면 그 기업과 관련된 기사들이 뜨게 되며 이를 바탕으로 그 기업에
-대해 보다 잘 알 수 있게 구현했습니다.
+#### 1. 채팅창 옆에 뉴스와 주식을 볼 수 있는 칸을 구현하여 기업에 관한 정보를 쉽게 얻을 수 있도록 구현
+<img src="image/결과1.png" width="auto" alt="결과1"/><br>
+- 밑의 입력창에 기업명을 적으면 그 기업과 관련된 기사들이 뜨는 식으로 구현했습니다.
+- 주식 칸에서 기업명을 검색하면 그 기업의 주가 정보가 나오도록 구현했습니다.
 
-#### 2. 마이페이지와 회원가입기능 추가
+#### 2. 관심기업 및 종합보고서 기능 그리고 주식조회와 왼쪽의 댓글코멘트와 좋아요의 기능을 추가
+<img src="image/결과3.png" width="auto" alt="결과3"/><br>
+- 해당 주식에 대한 여러 사람들의 생각을 볼 수 있게 댓글창을 구현하였으며 거기다 댓글에 좋아요를 눌러 서로 교류할 수 있도록 하였습니다.
+
+#### 3. 마이페이지와 회원가입 기능 추가
 <img src="image/결과4.png" width="auto" alt="결과4"/><br> 
-- 투자에 관심이 있으신 분들을 위해 기업 관련 주식이 나오는 칸을 만들어 보다 찾아보기
-쉽게 구현했습니다.
+- 로그인한 회원의 정보와 그 정보를 수정할 수 있는 기능을 추가하였습니다.
 
 <hr>
 
@@ -460,24 +471,17 @@ RAG (FAISS 벡터 DB / DART Open API)
   
  
 - **질문 유형 다양화**
-
   - 사용자 질문의 복잡성과 다양성에 대응하기 위해, 질문의 의도를 5가지 유형으로 먼저 
   분류하는 의도 분류 단계를 도입했습니다. 분류된 유형에 따라
   각기 다른 전문 체인과 리트리버가 동적으로 선택되어 질문을 처리합니다. 이러한 멀티-체인 
   아키텍처는 단일 파이프라인 방식보다 훨씬 더 정교하고 맥락에 맞는 답변을 생성하여 응답의 
   전문성을 극대화합니다.
-  
-
-- **메타 데이터 사용** 
-  
-  - 답변의 속도와 정확도를 향상시키기 위해 벡터 데이터에 날짜, 회사명 등의 메타 데이터를 
-  결합했습니다. 벡터 유사도 검색을 수행하기 전, 이 메타 데이터를 기준으로 사전 필터링을 
-  적용하여 검색해야 될 양을 줄였습니다. 이 방식은 관련 없는 데이터를 미리 제외함으로써
-  검색 속도를 높이고, 문맥에 더 적합한 결과를 찾아내어 최종 답변의 정확도를 높였습니다.
 
 
-
-
+- **Langgraph 활용**
+  - LangGraph를 활용해 질문 분류, 정보 추출, 응답 생성을 단계별 노드로 나누고, 조건 분기로 흐름을 자동 제어하도록 구성했습니다.
+  이 구조를 통해 복잡한 질문도 유연하게 처리할 수 있고, 각 질문에 맞는 적절한 응답 체인을 선택해 정확도를 높였습니다.
+  또한 유지보수가 쉬워지고, 사용자 수준별(초급~고급) 대응도 가능해져 전반적인 성능이 향상되었습니다.
 
 <hr>
 
