@@ -255,8 +255,8 @@ DART 서버에서 실시간 재무제표 데이터를 조회합니다.
 
 ## 6️⃣ Django WEBAPP 구현
 
-**메인 페이지**
-  <img src="image/메인 페이지.png" width="auto" alt="화면1"/>
+**화면설계 와이어 프레임**
+  <img src="image/wire.png" width="auto" alt="화면1"/>
 
 
 ### 테스트 진행
@@ -274,19 +274,19 @@ DART 서버에서 실시간 재무제표 데이터를 조회합니다.
 - **결과**<br>
   <img src="image/결과1.png" width="auto" alt="결과1"/><br>
   <img src="image/결과2.png" width="auto" alt="결과2"/><br>
-  <img src="image/결과2.png" width="auto" alt="결과3"/><br>
-  <img src="image/결과2.png" width="auto" alt="결과4"/><br> 
+  <img src="image/결과3.png" width="auto" alt="결과3"/><br>
+  <img src="image/결과4.png" width="auto" alt="결과4"/><br> 
 
 
 ### 추가 구현 사항
 **채팅창 옆에 뉴스와 주식을 볼 수 있는 칸을 구현하여 기업에 관한 정보를 많이 습득할 수 있도록 하였습니다.**
 #### 1. 뉴스
-<img src="image/뉴스.png" width="300" alt="뉴스"/><br>
+<img src="image/뉴스.png" width="auto" alt="뉴스"/><br>
 - 밑의 입력창에 기업명을 적으면 그 기업과 관련된 기사들이 뜨게 되며 이를 바탕으로 그 기업에
 대해 보다 잘 알 수 있게 구현했습니다.
 
 #### 2. 주식
-<img src="image/주식.png" width="300" alt="주식"/><br>
+<img src="image/주식.png" width="auto" alt="주식"/><br>
 - 투자에 관심이 있으신 분들을 위해 기업 관련 주식이 나오는 칸을 만들어 보다 찾아보기
 쉽게 구현했습니다.
 
@@ -316,6 +316,10 @@ DART 서버에서 실시간 재무제표 데이터를 조회합니다.
   결합했습니다. 벡터 유사도 검색을 수행하기 전, 이 메타 데이터를 기준으로 사전 필터링을 
   적용하여 검색해야 될 양을 줄였습니다. 이 방식은 관련 없는 데이터를 미리 제외함으로써
   검색 속도를 높이고, 문맥에 더 적합한 결과를 찾아내어 최종 답변의 정확도를 높였습니다.
+
+
+
+
 
 <hr>
 
