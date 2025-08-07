@@ -130,125 +130,73 @@ LLM의 널리지 컷오프 특성상 최신정보를 알기어렵기때문에 �
 <hr>
 
 ```markdown
-JEONGMINYOUNG
-└── 01_django_jembot
-    ├── _homework
-    │   ├── _homework
-    │   │   ├── __init__.py
-    │   │   ├── asgi.py
-    │   │   ├── settings.py
-    │   │   ├── timeout_screenshot...
-    │   │   ├── urls.py
-    │   │   └── wsgi.py
-    │   ├── app
-    │   │   ├── migrations
-    │   │   │   ├── __init__.py
-    │   │   │   └── 0001_initial.py
-    │   │   ├── utils2
-    │   │   │   ├── __init__.py
-    │   │   │   ├── api_get.py
-    │   │   │   ├── chain_setting.py
-    │   │   │   ├── corp_list.json
-    │   │   │   ├── graph_node.py
-    │   │   │   ├── graph_setting.py
-    │   │   │   ├── main.py
-    │   │   │   ├── normalize_code_se...
-    │   │   │   ├── retreiver_setting.py
-    │   │   │   ├── stock_chain.py
-    │   │   │   ├── stock_node.py
-    │   │   │   └── test.ipynb
-    │   │   ├── __init__.py
-    │   │   ├── admin.py
-    │   │   ├── apps.py
-    │   │   └── auth_views.py
-    │   ├── accounts
-    │   │   ├── __pycache__
-    │   │   ├── adapter.py
-    │   │   ├── admin.py
-    │   │   ├── apps.py
-    │   │   ├── forms.py
-    │   │   ├── urls.py
-    │   │   └── views.py
-    │   ├── models.py
-    │   ├── tests.py
-    │   ├── urls.py
-    │   ├── views.py
-    │   ├── static
-    │   │   ├── images
-    │   │   │   └── robot-icon.png
-    │   │   ├── js
-    │   │   │   └── app
-    │   │   │       ├── chat.js
-    │   │   │       ├── main_chat.js
-    │   │   │       ├── main.js
-    │   │   │       └── stock.js
-    │   │   └── css
-    │   │       ├── app
-    │   │       │   ├── chat.css
-    │   │       │   ├── login.css
-    │   │       │   ├── main.css
-    │   │       │   └── stock.css
-    │   │       └── layout
-    │   │           ├── base.css
-    │   │           ├── footer.css
-    │   │           └── header.css
-    │   ├── templates
-    │   │   ├── app
-    │   │   │   ├── login.html
-    │   │   │   ├── main.html
-    │   │   │   └── stock.html
-    │   │   ├── layout
-    │   │   │   ├── base.html
-    │   │   │   ├── footer.html
-    │   │   │   └── header.html
-    │   │   └── registration
-    │   │       ├── login.html
-    │   │       └── logout.html
-    │   ├── uauth
-    │   │   ├── migrations
-    │   │   │   └── __init__.py
-    │   │   ├── __init__.py
-    │   │   ├── admin.py
-    │   │   ├── apps.py
-    │   │   ├── models.py
-    │   │   ├── tests.py
-    │   │   └── views.py
-    │   ├── .gitignore
-    │   ├── manage.py
-    │   ├── requirements-minimal.txt
-    │   └── requirements.txt
-    ├── jembot_all
-    │   ├── _homework
-    │   │   ├── __pycache__
-    │   │   ├── __init__.py
-    │   │   ├── asgi.py
-    │   │   ├── settings.py
-    │   │   ├── timeout_screenshot...
-    │   │   ├── urls.py
-    │   │   └── wsgi.py
-    │   └── accounts
-    │       ├── __pycache__
-    │       ├── adapter.py
-    │       ├── admin.py
-    │       ├── apps.py
-    │       ├── forms.py
-    │       ├── urls.py
-    │       └── views.py
-    ├── views.py
-    ├── images
-    │   └── img.png
-    ├── media
-    ├── static
-    ├── templates
-    ├── .env
-    ├── .gitignore
-    ├── img.png
-    ├── manage.py
-    ├── requirements.txt
-    ├── setup.sql
-    ├── jembot_main
-    ├── jembot_main_stock
-    └── jembot_main_stock_log
+jembot_all/
+├── _homework/
+│   ├── __pycache__/
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── settings.py
+│   ├── timeout_screenshot.png
+│   ├── urls.py
+│   ├── wsgi.py
+│
+├── accounts/
+│   ├── __pycache__/
+│   ├── adapter.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── urls.py
+│   ├── views.py
+│
+├── app/
+├── images/
+├── media/
+│   └── profile_pics/
+├── static/
+│   ├── css/
+│   │   ├── app/
+│   │   │   ├── main.css
+│   │   │   └── stock.css
+│   │   ├── layout/
+│   │   ├── home.css
+│   │   └── profile.css
+│   ├── images/
+│   │   ├── google_icon.svg
+│   │   ├── kakao_icon.png
+│   │   ├── naver_icon.png
+│   │   └── robot-icon.png
+│   └── js/
+│       └── app/
+│           ├── main_chat.js
+│           ├── main.js
+│           └── stock.js
+│
+├── templates/
+│   ├── account/
+│   │   ├── login.html
+│   │   ├── logout.html
+│   │   ├── profile_edit.html
+│   │   ├── profile.html
+│   │   └── signup.html
+│   ├── app/
+│   │   ├── login.html
+│   │   ├── main.html
+│   │   └── stock.html
+│   ├── layout/
+│   │   ├── base.html
+│   │   ├── footer.html
+│   │   └── header.html
+│   └── socialaccount/
+│   └── home.html
+│
+├── .env
+├── .gitignore
+├── img.png
+├── manage.py
+├── requirements.txt
+├── setup.sql
+
 
 ```
 <hr>
