@@ -244,44 +244,47 @@ jembot_all/
 
 ##  5️⃣ 중요 코드 설명
 #### 1. `api_get.py`
-- `get_financial_state(corp_code, bsns_year, reprt_code, fs_div)`: DART 서버에 접속해 특정 회사의 해당 연도 재무제표 데이터를 API로 요청하고, 
-그 결과를 사람이 읽기 좋은 문자열 리스트로 가공하여 반환합니다.
-- **파일 요약**: 외부 금융감독원(DART) 서버와 통신하여 실시간 재무제표 데이터를 가져오는 역할을 담당합니다.
-성공 시 가공된 데이터를, 실패 시 에러 메시지를 반환합니다.
+
+get_financial_state() 함수는 기업 코드, 연도, 보고서 코드, 연결 구분을 받아 DART API로 요청을 보냅니다.
+
+응답이 성공적이면 각 항목(계정명, 당기/전기 금액, 통화)을 포맷팅해 리스트로 반환합니다.
+
+오류 발생 시 [API 오류] 메시지를 포함한 리스트를 반환합니다.
 
 ---
 
 #### 2. `chain_setting.py`
-- `create_chain()`: `gpt-4o-mini` 모델을 기반으로, 다양한 목적(질문 분류, 답변 생성 등)을 가진 프롬프트와
-모델을 결합하여 여러 종류의 LangChain '체인'을 생성하고 반환합니다.
-- **파일 요약**: AI 언어 모델(LLM)과의 모든 상호작용 규칙을 정의하는 파일입니다. 다양한 프롬프트와 LLM을 
-결합해, 특정 작업에 최적화된 처리 파이프라인인 '체인'들을 만듭니다.
+
+사용자가 선택한 기업명(selected_company)에 해당하는 고유 기업 코드(corp_code)를 CSV 파일에서 찾아냅니다.
+
+해당 기업의 공시 보고서 목록을 DART Open API로 요청하여 JSON 형태로 받아옵니다.
+
+받아온 보고서 리스트를 리스트 형태로 반환하며, 실패 시 빈 리스트를 반환합니다.
 
 ---
 
 #### 3. `graph_node.py`
-- `handle_accounting1/2/3(state)`: 회계 기준서 데이터베이스에서 질문과 관련된 내용을 검색해 답변을 생성합니다.
-- `handle_business1/2/3(state)`: 사업보고서 데이터베이스에서 질문과 관련된 내용을 검색해 답변을 생성합니다.
-- `handle_financial1/2/3(state)`: 질문에서 회사명과 연도를 추출하고, DART API로 재무 데이터를 조회해 
-답변을 생성합니다.
-- `handle_hybrid1/2/3(state)`: 위 세 가지 작업을 모두 수행하여 API 데이터와 내부 검색 결과를 종합한 
-심층 분석 답변을 생성합니다.
-- `elief(state)`: 회계와 관련 없는 일반적인 질문을 처리합니다.
-- **파일 요약**: 상태 기반 워크플로우에서 분류된 질문 유형과 난이도에 따라 실제 작업을 수행하는 노드 함수 모음입니다. 각 함수는 ChatState를 받아 데이터 검색, API 호출 등 필요한 작업을 수행하고, 수집된 모든 정보를 적절한 '체인'에 넘겨 최종 답변을 생성합니다.
+사용자의 질문을 분류(classify)하고 필요한 정보(회사, 연도 등)를 추출(extract_entities)합니다.
+
+질문 유형과 난이도에 따라 적절한 체인(accounting, financial, business, hybrid 등)을 선택하여 문서 검색 및 답변을 생성합니다.
+
+대화 기록(chat_history)을 유지하며 각 단계에서 사용자와 assistant의 역할에 따라 상태를 업데이트합니다.
 ---
 
 #### 4. `normalize_code_search.py`
-- `normalize_company_name(user_input, corp_list)`: 사용자가 입력한 회사명을 표준 회사명으로 정규화합니다.
-- `parse_extracted_text(text)`: AI가 생성한 텍스트에서 회사명과 연도를 정확히 추출합니다.
-- `find_corporation_code(company_name)`: 정규화된 회사명을 바탕으로 DART API에서 사용할 고유 기업 코드를 찾아 반환합니다.
-- **파일 요약**: 사용자 입력을 시스템이 이해하기 쉬운 형태로 가공하는 유틸리티 파일입니다. 비정형적인 회사명을 표준화하고, 텍스트에서 특정 정보를 추출하며, 최종적으로 DART 기업 코드를 찾아주는 역할을 합니다.
+normalize_company_name()은 입력된 기업명을 정규화하여 corp_list에서 가장 유사한 공식 기업명으로 매칭합니다.
 
+parse_extracted_text()는 텍스트에서 회사명과 연도 정보를 추출하여 딕셔너리 형태로 반환합니다.
+
+find_corporation_code()는 정규화된 기업명을 기반으로 corp_list.json에서 해당 기업의 고유 코드를 찾아 반환합니다.
 ---
 
 #### 5. `retriever_setting.py`
-- `faiss_retriever_loading()`: 미리 구축된 두 종류의 FAISS 벡터 데이터베이스(회계 기준서, 사업보고서)를 로드하고, `BAAI/bge-m3` 임베딩 모델을 기반으로 문서 내용을 검색할 수 있는 '리트리버' 객체들을 생성합니다.
-- **파일 요약**: 정보 검색 시스템을 설정하는 파일입니다. 저장된 문서 데이터베이스를 불러와, 사용자의 질문 의도와 가장 관련성 높은 문서를 효율적으로 찾아주는 '리트리버'를 준비하는 역할을 합니다.
+HuggingFace의 BAAI/bge-m3 임베딩 모델을 사용하여 로컬에 저장된 두 개의 FAISS 인덱스(faiss_index3, faiss_index_bge_m3)를 로드합니다.
 
+각각의 인덱스에서 top-6 유사 문서를 검색할 수 있는 accounting_retriever와 business_retriever를 생성합니다.
+
+SelfQueryRetriever 시도 코드는 주석 처리되어 있으며, 현재는 일반 retriever만 반환합니다
 ### 흐름
 ## 1. 사용자 인증 흐름 (일반 로그인 및 소셜 로그인)
 
