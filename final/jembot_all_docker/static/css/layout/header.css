@@ -1,0 +1,219 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+    border-bottom: 1px solid #eee;
+    padding :0px 20px;
+}
+  
+.header__logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width : 250px;
+}
+
+.header__logo-image {
+    width: 30px;
+}
+
+.header__logo-name {
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.header__actions {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    gap: 20px;
+    width : 300px;
+}
+
+.header__stock-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #495057;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 8px;
+}
+
+.header__stock-btn:hover {
+    color: #495057;
+    text-decoration: none;
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    border-color: #adb5bd;
+    transform: translateY(-1px);
+}
+
+.header__stock-btn i {
+    font-size: 16px;
+    color: #28a745;
+    transition: all 0.3s ease;
+}
+
+.header__stock-btn:hover i {
+    color: #218838;
+    transform: scale(1.1);
+}
+
+.header__stock-btn span {
+    font-weight: 500;
+    color: inherit;
+}
+
+.header__help {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #dee2e6;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.header__help:hover {
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    border-color: #adb5bd;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+.header__login {
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* 사용자 드롭다운 스타일 */
+.user-dropdown-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #495057;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    height: 36px;
+    min-width: 120px;
+}
+
+.user-dropdown-btn:hover {
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    border-color: #adb5bd;
+    transform: translateY(-1px);
+    color: #495057;
+}
+
+.user-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-name {
+    font-weight: 500;
+    color: inherit;
+}
+
+/* 헤더 검색창 스타일 */
+.header__search {
+    flex: 1;
+    max-width: 500px;
+    margin: 0 20px;
+    position: relative;
+}
+
+.header-search-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.header-search-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.header-search-input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.header-search-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.header-search-btn:hover {
+    background: #0056b3;
+}
+
+/* 헤더 검색 제안 스타일 */
+.header-search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 5px;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.header-suggestions-title {
+    padding: 10px 12px 6px;
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.header-suggestions-list {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.header-suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f8f9fa;
+    transition: background-color 0.2s;
+    font-size: 13px;
+    color: #212529;
+}
+
+.header-suggestion-item:hover {
+    background-color: #f8f9fa;
+}
+
+.header-suggestion-item:last-child {
+    border-bottom: none;
+}

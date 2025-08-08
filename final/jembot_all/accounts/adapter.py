@@ -31,6 +31,8 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         """
         user = sociallogin.user
         
+        print(f"소셜 로그인 사용자 저장 시작: {sociallogin.account.provider}")
+        
         # 1. 고유한 username 생성 (기존 로직 유지)
         if not user.username or user.username == '' or self.is_existing_username(user.username):
             if user.email:
@@ -44,6 +46,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
                 username = f"{username_base}{i}"
                 i += 1
             user.username = username
+            print(f"생성된 username: {username}")
 
         # 2. 소셜 서비스 제공자별로 추가 정보 채우기
         self.populate_user_fields(user, sociallogin)
@@ -51,6 +54,8 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         # 3. 최종 사용자 정보 저장
         super().save_user(request, sociallogin, form)
         user.save() # populate_user_fields에서 변경된 내용을 확실히 저장
+        
+        print(f"사용자 저장 완료: username={user.username}, profile_picture={user.profile_picture}")
         return user
 
     def populate_user_fields(self, user, sociallogin):
@@ -58,40 +63,52 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         sociallogin 객체에서 추가 정보를 추출하여 user 모델의 필드를 채웁니다.
         """
         extra_data = sociallogin.account.extra_data
+        provider = sociallogin.account.provider
+        
+        print(f"소셜 로그인 정보 처리 시작: {provider}")
+        print(f"Extra data: {extra_data}")
         
         # --- 이름(name) 필드 채우기 ---
-        if sociallogin.account.provider == 'naver':
+        if provider == 'naver':
             naver_data = extra_data.get('response', {})
             user.name = naver_data.get('name', '')
             # 네이버 프로필 이미지 처리
             profile_image = naver_data.get('profile_image')
+            print(f"네이버 프로필 이미지 URL: {profile_image}")
             if profile_image and not user.profile_picture:
                 self.save_profile_image(user, profile_image, 'naver')
         
-        elif sociallogin.account.provider == 'kakao':
+        elif provider == 'kakao':
             kakao_account = extra_data.get('kakao_account', {})
+            profile_data = kakao_account.get('profile', {})
             # 카카오에서는 이름 정보를 제공하지 않으므로 닉네임을 사용
-            user.name = kakao_account.get('profile', {}).get('nickname', '')
+            user.name = profile_data.get('nickname', '')
             # 카카오 프로필 이미지 처리
-            profile_image = kakao_account.get('profile', {}).get('profile_image_url')
+            profile_image = profile_data.get('profile_image_url')
+            print(f"카카오 프로필 이미지 URL: {profile_image}")
             if profile_image and not user.profile_picture:
                 self.save_profile_image(user, profile_image, 'kakao')
         
-        elif sociallogin.account.provider == 'google':
+        elif provider == 'google':
             # 구글 프로필 이미지 처리
             profile_image = extra_data.get('picture')
+            print(f"구글 프로필 이미지 URL: {profile_image}")
             if profile_image and not user.profile_picture:
                 self.save_profile_image(user, profile_image, 'google')
 
         # --- 닉네임(nickname) 필드 채우기 (공통 로직) ---
         user.nickname = self.generate_unique_nickname(user.email, user.username)
+        
+        print(f"사용자 정보 설정 완료: name={user.name}, nickname={user.nickname}, profile_picture={user.profile_picture}")
 
     def save_profile_image(self, user, image_url, provider):
         """
         소셜 로그인에서 받은 프로필 이미지를 저장합니다.
         """
         try:
-            response = requests.get(image_url)
+            print(f"프로필 이미지 저장 시작: {provider}, URL: {image_url}")
+            
+            response = requests.get(image_url, timeout=10)
             if response.status_code == 200:
                 # 파일 확장자 결정
                 content_type = response.headers.get('content-type', '')
@@ -99,6 +116,8 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
                     ext = 'jpg'
                 elif 'png' in content_type:
                     ext = 'png'
+                elif 'gif' in content_type:
+                    ext = 'gif'
                 else:
                     ext = 'jpg'  # 기본값
                 
@@ -114,8 +133,15 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
                 user.profile_picture.save(filename, ContentFile(img_temp.read()), save=False)
                 img_temp.close()
                 
+                # 사용자 객체를 저장하여 프로필 이미지 변경사항을 확실히 저장
+                user.save()
+                
+                print(f"프로필 이미지 저장 성공: {filename}")
+                
         except Exception as e:
             print(f"프로필 이미지 저장 실패: {e}")
+            import traceback
+            traceback.print_exc()
 
     def generate_unique_nickname(self, email, username):
         """이메일 또는 username을 기반으로 고유한 닉네임을 생성합니다."""

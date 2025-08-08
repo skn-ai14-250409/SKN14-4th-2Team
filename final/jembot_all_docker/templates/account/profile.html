@@ -1,0 +1,132 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}마이페이지{% endblock %}
+
+{% block content %}
+<div class="mypage-container">
+    <h1 style="margin-bottom: 1.5rem; margin-top: 0;">마이페이지</h1>
+    <div class="profile-section">
+        {% if user.profile_picture and user.profile_picture.name != 'profile_pics/robot-icon.png' %}
+            <img src="{{ user.profile_picture.url }}" alt="프로필 사진" class="profile-pic">
+        {% else %}
+            <div class="profile-pic-default">
+                <img src="{% static 'images/robot-icon.png' %}" alt="기본 프로필" class="profile-pic">
+            </div>
+        {% endif %}
+    </div>
+    <div class="info-section">
+        <p><strong>아이디(user_name):</strong> {% if user.username %}{{ user.username }} {% else %} {{user.email}} {% endif %}</p>
+        <p><strong>이름(name):</strong> {% if user.name %}{{ user.name }}{% elif user.last_name and user.first_name %}{{ user.last_name }}{{ user.first_name }}{% endif %}</p>        <p><strong>닉네임(nickname):</strong> {{ user.nickname }}</p>
+        <p><strong>이메일(email):</strong> {{ user.email }}</p>
+        <p><strong>가입일:</strong> {{ user.date_joined|date:"Y년 m월 d일" }}</p>
+    </div>
+    <div class="profile-action-buttons-container" style="display: flex !important; gap: 1rem !important; justify-content: center !important; margin-top: 1rem !important; flex-wrap: wrap !important; text-align: center !important; padding-top: 15px !important; border-top: 1px solid #e9ecef !important;">
+        <div class="profile-action-button-wrapper home-button-wrapper" style="display: inline-block !important; margin: 0 !important; padding: 0 !important; background: none !important;">
+            <a href="{% url 'app:main' %}" class="profile-action-btn profile-home-btn" style="all: unset !important; display: inline-block !important; padding: 12px 25px !important; font-size: 16px !important; font-weight: 500 !important; text-align: center !important; text-decoration: none !important; border-radius: 5px !important; border: none !important; cursor: pointer !important; transition: background-color 0.2s ease-in-out, transform 0.1s ease !important; color: white !important; background-color: #6c757d !important; margin: 0 !important; outline: none !important; box-shadow: none !important; min-width: 120px !important; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important; line-height: normal !important; vertical-align: baseline !important; white-space: nowrap !important; overflow: visible !important; position: relative !important; float: none !important;">홈으로</a>
+        </div>
+        <div class="profile-action-button-wrapper edit-button-wrapper" style="display: inline-block !important; margin: 0 !important; padding: 0 !important; background: none !important;">
+            <a href="{% url 'accounts:profile_edit' %}" class="profile-action-btn profile-edit-btn" style="all: unset !important; display: inline-block !important; padding: 12px 25px !important; font-size: 16px !important; font-weight: 500 !important; text-align: center !important; text-decoration: none !important; border-radius: 5px !important; border: none !important; cursor: pointer !important; transition: background-color 0.2s ease-in-out, transform 0.1s ease !important; color: white !important; background-color: #28a745 !important; margin: 0 !important; outline: none !important; box-shadow: none !important; min-width: 120px !important; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important; line-height: normal !important; vertical-align: baseline !important; white-space: nowrap !important; overflow: visible !important; position: relative !important; float: none !important;">프로필 수정</a>
+        </div>
+        <div class="profile-action-button-wrapper logout-button-wrapper" style="display: inline-block !important; margin: 0 !important; padding: 0 !important; background: none !important;">
+            <!-- 로그아웃 버튼에 id를 부여합니다 -->
+            <a href="{% url 'account_logout' %}" id="logout-btn" class="profile-action-btn profile-logout-btn" style="all: unset !important; display: inline-block !important; padding: 12px 25px !important; font-size: 16px !important; font-weight: 500 !important; text-align: center !important; text-decoration: none !important; border-radius: 5px !important; border: none !important; cursor: pointer !important; transition: background-color 0.2s ease-in-out, transform 0.1s ease !important; color: white !important; background-color: #dc3545 !important; margin: 0 !important; outline: none !important; box-shadow: none !important; min-width: 120px !important; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important; line-height: normal !important; vertical-align: baseline !important; white-space: nowrap !important; overflow: visible !important; position: relative !important; float: none !important;">로그아웃</a>
+        </div>
+    </div>
+</div>
+
+<!-- 로그아웃 POST 요청을 보내기 위한 숨겨진 폼 -->
+<form id="logout-form" action="{% url 'account_logout' %}" method="POST" style="display: none;">
+    {% csrf_token %}
+</form>
+{% endblock %}
+
+{% block extra_script %}
+<!-- 로그아웃 확인 창을 위한 JavaScript 코드 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(event) {
+            // a 태그의 기본 동작(페이지 이동)을 막습니다.
+            event.preventDefault(); 
+            
+            // 사용자에게 확인을 받습니다.
+            if (confirm('로그아웃 하시겠습니까?')) {
+                // '확인'을 누르면 숨겨진 폼을 전송하여 안전하게 로그아웃합니다.
+                document.getElementById('logout-form').submit();
+            }
+        });
+    }
+});
+</script>
+
+<style>
+/* 기존 스타일 유지 */
+.mypage-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+    min-height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.profile-section {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.profile-pic,
+.profile-pic-default img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.info-section {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.info-section p {
+    margin-bottom: 0.8rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.info-section p:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.info-section strong {
+    color: #495057;
+    min-width: 120px;
+    display: inline-block;
+}
+
+/* 호버 효과를 위한 추가 CSS */
+.profile-home-btn:hover {
+    background-color: #5a6268 !important;
+}
+
+.profile-edit-btn:hover {
+    background-color: #218838 !important;
+}
+
+.profile-logout-btn:hover {
+    background-color: #c82333 !important;
+}
+
+.profile-action-btn:active {
+    transform: translateY(1px) !important;
+}
+</style>
+{% endblock %} 

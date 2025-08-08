@@ -1,0 +1,150 @@
+.auth-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.auth-form {
+    width: 100%;
+    max-width: 450px;
+    padding: 40px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin: 20px 0;
+    max-height: none;
+    overflow-y: visible;
+}
+
+.auth-form h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 24px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.form-switch {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.divider {
+    margin: 30px 0;
+    border: 0;
+    height: 1px;
+    background-color: #eee;
+}
+
+.social-login .login_box img {
+    width: 50px;       /* 아이콘의 너비를 50px로 고정합니다. */
+    height: 50px;      /* 아이콘의 높이를 50px로 고정합니다. */
+    border-radius: 50%; /* 아이콘을 원형으로 만듭니다. */
+    object-fit: cover; /* 이미지 비율이 달라도 원 안에 꽉 차도록 채웁니다. */
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: flex;
+    justify-content: space-between;
+    gap:30px;
+}
+
+.login_box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    gap:40px
+}
+
+/* allauth 폼 필드 스타일 */
+.form-group input[type="email"],
+.form-group input[type="text"],
+.form-group input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #666;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border: 1px solid #f5c6cb;
+}
+
+.error-message p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* 로그아웃 페이지 스타일 */
+.auth-form p {
+    text-align: center;
+    color: #666;
+}
+
+/* 아이디 저장 체크박스 스타일 */
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.remember-me input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.remember-me label {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+} 

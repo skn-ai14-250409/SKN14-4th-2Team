@@ -1,0 +1,220 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "css/app/stock.css" %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock head %}
+
+{% block title %}stock page{% endblock title %}
+
+{% block content %}
+<div id="wrapper">
+    <div class="stock-container">
+        <div class="favorite-container">
+            <div class="list-section favorites-section">
+                <div class="favorite-list__name">즐겨찾기 목록</div>
+                <div class="section-content" id="favorites-content">
+                    <!-- 즐겨찾기 목록이 동적으로 로드됩니다 -->
+                    <div class="favorites-placeholder" style="text-align: center; padding: 20px; color: #666; font-size: 14px;">
+                        <i class="bi bi-star" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                        즐겨찾기 목록을 불러오는 중...
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-section history-section accordion collapsed">
+                <div class="accordion-header">
+                    <span class="history-list__name">검색 기록</span>
+                    <i class="bi bi-chevron-down accordion-icon"></i>
+                </div>
+                <div class="section-content" id="history-content">
+                    <!-- 검색 기록이 동적으로 로드됩니다 -->
+                    <div class="history-placeholder" style="text-align: center; padding: 20px; color: #666; font-size: 14px;">
+                        <i class="bi bi-clock-history" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                        아직 검색 기록이 없습니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-container">
+            <div class="stock-info">
+                <div class="stock-header">
+                    <div class="stock-info-display" id="stockInfoDisplay" style="display: none;">
+                        <div class="stock-title">
+                                                        <div class="stock-name-section" style="display: flex !important; align-items: center !important; gap: 8px !important; margin-bottom: 5px !important;">
+                                <h2 id="companyName" style="margin: 0 !important; flex-shrink: 0 !important;">--</h2>
+                                <button class="stock-favorite-btn" id="stockFavoriteBtn" 
+                                        style="display: inline-flex !important; 
+                                               visibility: visible !important; 
+                                               opacity: 1 !important;
+                                               align-items: center !important;
+                                               justify-content: center !important;
+                                               min-width: 32px !important;
+                                               min-height: 32px !important;
+                                               background: none !important;
+                                               border: none !important;
+                                               cursor: pointer !important;
+                                               border-radius: 50% !important;
+                                               padding: 6px !important;
+                                               flex-shrink: 0 !important;
+                                               margin-left: 0 !important;
+                                               margin-top: 0 !important;">
+                                    <i class="bi bi-star" id="stockFavoriteIcon" 
+                                       style="font-size: 1.1rem !important; color: #6c757d !important;"></i>
+                                </button>
+                            </div>
+                            <span class="stock-symbol" id="stockSymbol">--</span>
+                            <div class="related-stocks" id="relatedStocks" style="display: none;">
+                                <div class="related-stocks-list" id="relatedStocksList"></div>
+                            </div>
+                        </div>
+                        <div class="stock-price">
+                            <div class="current-price" id="currentPrice">₩--</div>
+                            <div class="price-change" id="priceChange">--</div>
+                            <div class="update-time" id="updateTime">업데이트 중...</div>
+                        </div>
+                    </div>
+                    <!-- Stock 페이지 내부 검색창 제거됨 - 헤더 검색창만 사용 -->
+                    
+                </div>
+
+                <div class="stock-details">
+                    <div class="detail-section">
+                        <div class="stock-period-selector">
+                            <button class="period-button active">1일</button>
+                            <button class="period-button">5일</button>
+                            <button class="period-button">1개월</button>
+                            <button class="period-button">6개월</button>
+                            <button class="period-button">연중</button>
+                            <button class="period-button">1년</button>
+                            <button class="period-button">5년</button>
+                            <button class="period-button">최대</button>
+                        </div>
+                        <div class="chart-and-ranking-container">
+                            <div class="stock-chart-container">
+                                <div class="stock-chart" id="stockChartContainer">
+                                    <canvas id="stockChart" width="400" height="200"></canvas>
+                                    <!-- 차트 로딩 메시지 -->
+                                    <div class="chart-loading-message" id="chartLoadingMessage" style="display: none;">
+                                        <i class="bi bi-hourglass-split"></i>
+                                        차트를 불러오는 중...
+                                    </div>
+                                </div>
+                            
+                                <!-- 초기 상태 -->
+                                <div class="stock-empty-state" id="stockEmptyState">
+                                    <div class="empty-state-icon">
+                                        <i class="bi bi-search"></i>
+                                    </div>
+                                    {# 로딩 메세지 부분#}
+                                    <div class="loading-message" id="loadingMessage" style="display: none;">
+                                    </div>
+                                    <div class="empty-state-text">
+                                        <p>궁금한 기업명을 검색하여</p>
+                                        <p>주식 정보를 확인하세요.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-details" id="chartDetails" style="display: none;">
+                                <div class="detail-item">
+                                    <span class="label">시가총액</span>
+                                    <span class="value" id="marketCap">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">거래량</span>
+                                    <span class="value" id="volume">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">52주 최고</span>
+                                    <span class="value" id="fiftyTwoWeekHigh">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">52주 최저</span>
+                                    <span class="value" id="fiftyTwoWeekLow">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Forward P/E</span>
+                                    <span class="value" id="perValue">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">배당수익률</span>
+                                    <span class="value" id="dividendYield">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">당일 최고가</span>
+                                    <span class="value" id="dayHigh">--</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">당일 최저가</span>
+                                    <span class="value" id="dayLow">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 주식 정보 요약 섹션 -->
+                        <div class="jembot-summary-container" id="jembotSummaryContainer" style="display: none;">
+                            <div class="jembot-summary-title">
+                                <h3>Jembot 주식 정보 요약</h3>
+                            </div>
+                            <div class="jembot-summary-content">
+                                <div class="jembot-summary-item">
+                                    삼성전자 2024년 1분기 리서치 보고서
+                                    1. 핵심 요약
+                                    삼성전자는 2024년 1분기 동안 글로벌 전자 기업으로서의 입지를 유지하며, 매출액 300,871억원, 영업이익 32,726억원, 당기순이익 34,451억원을 기록했습니다. 이는 전년 동기 대비 매출과 이익 모두 증가한 수치로, 특히 영업이익이 크게 개선되었습니다.
+                                    
+                                    2. 사업 분석
+                                    삼성전자는 DX(Device eXperience) 부문과 DS(Device Solutions) 부문을 중심으로 사업을 운영하고 있습니다. DX 부문은 TV, 스마트폰 등 다양한 전자제품을 생산하며, DS 부문은 DRAM, NAND Flash 등 반도체 제품을 주력으로 하고 있습니다. 또한, SDC는 OLED 패널을, Harman은 커넥티드카 솔루션을 제공하며 시장에서의 경쟁력을 강화하고 있습니다.
+                                    
+                                    3. 재무 분석
+                                    2024년 1분기 매출액은 300,871억원으로 전년 동기 대비 증가했습니다. 영업이익은 32,726억원으로 전년 대비 큰 폭으로 증가하였으며, 이는 매출원가와 판매비 및 관리비의 효율적 관리에 기인합니다. 부채총계는 112,340억원으로, 자본총계 402,192억원 대비 안정적인 재무구조를 유지하고 있습니다.
+                                    
+                                    4. 종합 의견
+                                    삼성전자는 2024년 1분기 동안 견고한 실적을 기록하며, 글로벌 시장에서의 경쟁력을 지속적으로 강화하고 있습니다. 그러나 반도체 시장의 변동성과 글로벌 경제 불확실성은 여전히 리스크 요인으로 작용할 수 있습니다. 이러한 점을 감안하여, 지속적인 기술 혁신과 시장 다변화 전략이 필요할 것으로 보입니다.
+                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="review-container">
+            <div class = 'review-inside'>
+                <div class="review-list">
+                    <div class = 'review-list-title'>커뮤니티 <span class="comment-count">(0)</span></div>
+                    <div class="section-content empty-reviews" id="reviews-container">
+                        <!-- 댓글 목록이 동적으로 로드됩니다 -->
+                        <div class="reviews-placeholder" style="text-align: center; padding: 20px; color: #666; font-size: 14px;">
+                            <i class="bi bi-chat-dots" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                            댓글을 작성해보세요!
+                        </div>
+                    </div>
+                </div>
+                <div class="review-input__container">
+                    <div class="review-input">
+                        <div class="review-input__box">
+                            <input type="text" id="reviewInput" placeholder="댓글을 남겨주세요" maxlength="1000" />
+                        </div>
+                        <div class="review-search-button">
+                            <button type="button" id="reviewSubmitBtn" class="btn btn-outline-secondary">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block script %}
+    <script src="{% static 'js/app/stock.js' %}"></script>
+{% endblock script %}
+

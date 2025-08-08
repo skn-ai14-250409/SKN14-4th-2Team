@@ -1,8 +1,9 @@
 /* static/css/mypage.css */
 
 .mypage-container {
-    margin: 20px 0px;
-    padding: 20px 40px;
+    max-width: 800px !important;
+    margin: 20px auto !important;
+    padding: 20px 40px !important;
     background: #fff;
     border-radius: 8px;
     border: 1px solid #e9ecef;
