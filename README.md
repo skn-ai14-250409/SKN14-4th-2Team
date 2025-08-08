@@ -204,7 +204,7 @@ jembot_all/
 
 ## 4️⃣ 시스템 아키텍처
 
-<img src="image/skn14-4th-2team.drawio (7).png" width="auto" alt="시각화 사진"/>
+<img src="image/archi.png" width="auto" alt="시각화 사진"/>
 
  **1. 질문 입력**<br>
 **사용자는 챗봇을 통해 질문을 입력합니다.<br>**
