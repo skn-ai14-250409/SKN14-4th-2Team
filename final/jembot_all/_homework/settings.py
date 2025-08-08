@@ -90,7 +90,7 @@ WSGI_APPLICATION = "_homework.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'jembotdatabase',
+        'NAME': 'jembotdb',
         'USER' : 'jembot',
         'PASSWORD' : 'jembot',
         'HOST' : '127.0.0.1',

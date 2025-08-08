@@ -4,7 +4,7 @@
 {% block title %}마이페이지{% endblock %}
 
 {% block content %}
-<div class="mypage-container">
+<div class="mypage-container" style="max-width: 800px !important; margin: 20px auto !important; padding: 20px 40px !important;">
     <h1 style="margin-bottom: 1.5rem; margin-top: 0;">마이페이지</h1>
     <div class="profile-section">
         {% if user.profile_picture and user.profile_picture.name != 'profile_pics/robot-icon.png' %}
@@ -64,9 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
 <style>
 /* 기존 스타일 유지 */
 .mypage-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 1rem;
     min-height: calc(100vh - 200px);
     display: flex;
     flex-direction: column;

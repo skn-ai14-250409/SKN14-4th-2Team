@@ -30,7 +30,7 @@ SECRET_KEY = "django-insecure-!gz)%vbc2%=dgz0^s$#w-a%(@id788n-*vzw%&8489f6g1bg#f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['skn14.jembot.o-r.kr', 'localhost', '127.0.0.1', '43.203.203.15']
 
 
 # Application definition
@@ -93,7 +93,7 @@ DATABASES = {
         'NAME': 'jembotdb',
         'USER' : 'jembot',
         'PASSWORD' : 'jembot',
-        'HOST' : '127.0.0.1',
+        'HOST' : '13.125.232.32',
         'PORT' : '3306',
         'OPTIONS': {
             'charset': 'utf8mb4',

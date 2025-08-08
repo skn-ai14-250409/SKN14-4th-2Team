@@ -1,0 +1,290 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}프로필 수정{% endblock %}
+
+{% block content %}
+<div class="mypage-container">
+    <h1>프로필 수정</h1>
+ 
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            {% if message.tags == 'success' and '로그아웃' not in message.message and '로그인' not in message.message %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <script>
+    // 페이지 로드 후 메시지를 삭제
+    document.addEventListener('DOMContentLoaded', function() {
+        // 3초 후 메시지 숨기기
+        setTimeout(function() {
+            const messages = document.querySelector('.messages');
+            if (messages) {
+                messages.style.display = 'none';
+            }
+        }, 3000);
+    });
+    </script>
+    
+    <form method="post" enctype="multipart/form-data" class="profile-edit-form">
+        {% csrf_token %}
+        
+        {% if form.errors %}
+        <div class="error-message">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="form-columns">
+            <div class="form-column">
+                <div class="form-section">
+                    <h3>기본 정보</h3>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                        {{ form.name }}
+                        {% if form.name.help_text %}
+                        <small class="form-text text-muted">{{ form.name.help_text }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% if form.email.help_text %}
+                        <small class="form-text text-muted">{{ form.email.help_text }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.nickname.id_for_label }}">{{ form.nickname.label }}</label>
+                        {{ form.nickname }}
+                        {% if form.nickname.help_text %}
+                        <small class="form-text text-muted">{{ form.nickname.help_text }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-column">
+                <div class="form-section">
+                    <h3>프로필 사진</h3>
+                    
+                    <div class="current-profile-pic">
+                        <h4>현재 프로필 사진</h4>
+                        {% if user.profile_picture and user.profile_picture.name != 'profile_pics/robot-icon.png' %}
+                            <img src="{{ user.profile_picture.url }}" alt="현재 프로필 사진" class="profile-pic-preview">
+                        {% else %}
+                            <img src="{% static 'images/robot-icon.png' %}" alt="기본 프로필" class="profile-pic-preview">
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.profile_picture.id_for_label }}">{{ form.profile_picture.label }}</label>
+                        {{ form.profile_picture }}
+                        {% if form.profile_picture.help_text %}
+                        <small class="form-text text-muted">{{ form.profile_picture.help_text }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-section">
+            <button type="submit" class="custom-btn-save">저장</button>
+            <a href="{% url 'accounts:account_profile' %}" class="custom-btn-cancel">취소</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.mypage-container {
+    margin: 20px 0px;
+    padding: 20px 40px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.profile-edit-form {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.form-columns {
+    display: flex;
+    gap: 2rem;
+}
+
+.form-column {
+    flex: 1;
+}
+
+/* 반응형 디자인 - 작은 화면에서는 세로로 배치 */
+@media (max-width: 768px) {
+    .form-columns {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+.form-section {
+    padding: 1.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    height: 100%;
+    width: 100%;
+}
+
+.action-section {
+    padding-top: 40px !important;
+}
+
+.form-section h3 {
+    font-size: 20px;
+    margin-bottom: 1rem;
+    color: #333;
+    padding-bottom: 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.current-profile-pic {
+    margin-bottom: 60px;
+    text-align: center;
+}
+
+.current-profile-pic h4 {
+    font-size: 16px;
+    margin-bottom: 1rem;
+    
+}
+
+.profile-pic-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.action-section {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0px !important;
+    border-top: 0px !important;
+}
+
+/* 새로운 커스텀 버튼 스타일 - 더 강력한 선택자 */
+button.custom-btn-save,
+a.custom-btn-cancel {
+    padding: 12px 24px !important;
+    border: none !important;
+    border-radius: 10px !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    text-align: center !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    color: white !important;
+    font-size: 14px !important;
+    min-width: 100px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transform: translateY(0) !important;
+    box-sizing: border-box !important;
+}
+
+/* 버튼 호버 공통 효과 */
+button.custom-btn-save:hover,
+a.custom-btn-cancel:hover {
+    text-decoration: none !important;
+    color: white !important;
+}
+
+/* 저장 버튼 - 파란색 그라데이션 */
+button.custom-btn-save {
+    background: linear-gradient(135deg, #667eea 0%) !important;
+}
+
+button.custom-btn-save:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%) !important;
+    color: white !important;
+}
+
+/* 취소 버튼 - 회색 그라데이션 */
+a.custom-btn-cancel {
+    background: linear-gradient(135deg, #a8a8a8 0%) !important;
+}
+
+a.custom-btn-cancel:hover {
+    background: linear-gradient(135deg, #969696 0%) !important;
+    color: white !important;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    border: 1px solid #f5c6cb;
+}
+
+.messages {
+    margin-bottom: 1rem;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+</style>
+{% endblock %}

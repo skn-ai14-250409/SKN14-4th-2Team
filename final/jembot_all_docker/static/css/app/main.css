@@ -1,0 +1,890 @@
+:root {
+    --input-background-color: rgb(237, 237, 237);
+    --chat-bot__content-color: rgb(240, 240, 240);
+    --chat-user__content-color: rgb(0, 122, 255);
+    --chat__time-color: rgb(137, 137, 137);
+    /* --action-btn-color: rgb(0, 69, 143); */
+    --action-btn-color: rgb(219, 228, 244);
+    --action-btn-font-color: rgb(0, 69, 143);
+    --level-button-color: rgb(195, 210, 237);
+}
+
+[class*="__mark"] {
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.chat-container {
+    display: flex;
+    height: calc(100vh - 140px); 
+}
+
+/* ㅡㅡㅡㅡ 대화목록 css ㅡㅡㅡㅡ */
+
+.chat-list {
+    width: 250px;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    padding :0px 20px;
+    height: 100%;
+    display:flex;
+    flex-direction: column;
+}
+
+.chat-list__add {
+    display : flex;
+    justify-content: space-between;
+    padding-top : 20px;
+}
+
+.chat-list__name {
+    font-weight: 600;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chat-add-button button {
+    width: 30px;  
+    height: 30px;
+    font-size: 14px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chat-list__box {
+    margin: 4px 0px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 8px;
+    min-height: 60px;
+    max-height: 60px;
+    box-sizing: border-box;
+}
+
+.chat-list__text {
+    cursor: pointer;
+    padding: 4px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.chat-list__box:hover {
+    background-color: var(--action-btn-color);
+}
+
+.chat-list__time {
+    font-size: 11px;
+    color: #999;
+    white-space: nowrap;
+}
+
+.dropdown {
+    margin-left: auto;
+}
+
+.dropdown .btn {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    display :flex;
+    justify-content: center;
+    align-items: center;
+    width : 20px;
+    height : 20px;
+    color : var(--action-btn-font-color);
+    padding-right : 15px;
+}
+
+.dropdown .btn:hover,
+.dropdown .btn:focus,
+.dropdown .btn:active {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.btn-group {
+    width : 200px;
+    height : 36px;
+}
+
+.btn-group .btn {
+    /* background-color: var(--level-button-color); */
+    border-color: var(--level-button-color);
+    border-radius: 20px;
+    color: var(--action-btn-font-color);
+    font-size: 14px;
+}
+
+.btn-group .btn:hover {
+    background-color: var(--level-button-color);
+    border-color: var(--level-button-color);
+    color: var(--action-btn-font-color);
+}
+
+.btn-group .btn-check:checked + .btn {
+    background-color: var(--level-button-color);
+    border-color: var(--level-button-color);
+    color: var(--action-btn-font-color);
+    font-weight: 500 ;
+}
+
+/* ㅡㅡㅡㅡ 챗봇 css ㅡㅡㅡㅡ */
+
+.chat-window {
+    flex: 1;
+    height: 100%; 
+    display: flex;
+    flex-direction: column;
+    padding:0px 20px ;
+}
+
+.chat-start__container{
+    display: flex;
+    justify-content: center;
+    padding : 0px 0px 20px 0px;
+}
+
+.chat-start__inside {
+    color : var(--chat__time-color);
+    font-size : 12px;
+    text-align: center;
+}
+
+.chat-messages,
+.choices-info,
+.chat-list__item {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin; 
+    scrollbar-color: rgba(0, 0, 0, 0.1) transparent; 
+    padding-bottom : 20px;
+    padding-top : 20px; 
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-bot {
+    display : flex;
+    gap : 10px;
+    padding-top : 40px;
+    position: relative;
+}
+
+.chat-bot__content {
+    padding : 10px 20px;
+    border-radius: 20px;
+    background-color: var(--chat-bot__content-color);
+    width: fit-content; 
+    max-width: 80%; 
+    word-wrap: break-word; 
+    white-space: pre-line;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.chat-bot__time, .chat-user__time {
+    font-size: 12px;
+    color : var(--chat__time-color);
+    display : flex;
+    align-items: end;
+}
+
+.chat-user {
+    display: flex;
+    justify-content: flex-end; 
+    gap : 10px;
+    padding-top : 20px;
+}
+
+.chat-user__content {
+    padding : 10px 20px;
+    border-radius: 20px;
+    background-color: var(--chat-user__content-color);
+    width: fit-content; 
+    max-width: 80%; 
+    word-wrap: break-word; 
+    color : white;
+}
+
+
+.beginner_answer__mark {
+    position: absolute;
+    top: 10px;
+    left: 20px; 
+    background-color: #4b9df5;
+}
+
+.intermediate_answer__mark {
+    position: absolute;
+    top: 10px;
+    left: 20px; 
+    background-color: #f1a438;
+}
+
+.advanced_answer__mark {
+    position: absolute;
+    top: 10px;
+    left: 20px; 
+    background-color: #e91e63;
+}
+
+
+.chat-input__container,
+.choices-input__container,
+.btn-group__container {
+    padding: 20px 0px;
+    border-top: 1px solid #ddd;
+}
+
+.chat-input ,
+.choices-input { 
+    flex : 1;
+    width : 100%;
+    border-radius: 20px;
+    padding-left : 20px;
+    padding-right : 20px;
+    background-color: var(--input-background-color);
+    display : flex;
+    gap : 20px;
+}
+
+.chat-input__box,
+.choices-input__box {
+    flex : 1;
+}
+
+.chat-input__box input,
+.choices-input__box input {
+    width : 100%;
+    padding: 5px;
+    border: none;
+    background-color: var(--input-background-color);
+    outline: none;
+}
+
+.chat-search-button button,
+.choices-search-button button {
+    border : none;
+}
+
+.chat-search-button button:hover {
+    background-color: var(--input-background-color);
+    color : darkgray !important;
+}
+
+/* ㅡㅡㅡㅡ 뉴스 주식 버튼 css ㅡㅡㅡㅡ */
+
+.additional_info {
+    border-left: 1px solid #ddd;
+    width : 300px;
+    height: 100%; 
+    display: flex;
+    flex-direction: column;
+    padding:0px 20px ;
+}
+
+.choices { 
+    padding: 20px 0px 0px;
+    display :flex;
+    justify-content: space-between;
+}
+
+.news-button button, .stock-button button{
+    border-radius: 25px ;
+    width : 120px;
+}
+
+.chat-add-button .btn,
+.news-button .btn,
+.stock-button .btn {
+    border-color: var(--action-btn-color);
+    color: var(--action-btn-font-color);
+}
+
+.chat-add-button .btn:hover,
+.news-button .btn:hover,
+.stock-button .btn:hover {
+    background-color: var(--action-btn-color);
+    border-color: var(--action-btn-color);
+    color: var(--action-btn-font-color);
+}
+
+/* active 상태 스타일 */
+.chat-add-button .btn.active,
+.news-button .btn.active,
+.stock-button .btn.active {
+    background-color: var(--action-btn-color) !important;
+    border-color: var(--action-btn-color) !important;
+    color: var(--action-btn-font-color) !important;
+}
+
+.chat-add-button .btn.active,
+.news-button .btn.active,
+.stock-button .btn.active {
+    background-color: var(--action-btn-color) !important;
+    border-color: var(--action-btn-color) !important;
+    color: var(--action-btn-font-color) !important;
+}
+
+/* ㅡㅡㅡㅡ 뉴스 css ㅡㅡㅡㅡ */
+
+.news-container {
+    /* display : none; */
+    height : 100%;
+}
+
+.news-box {
+    padding : 10px 0px;
+}
+
+.news-box:hover {
+    background-color: rgb(246, 246, 246);
+    border-radius: 20px;
+    padding:10px;
+}
+
+.news-box__top { 
+    display : flex;
+    gap : 10px;
+    padding-bottom : 10px;
+   
+}
+
+.news-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* 2줄까지 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.news-content {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 2줄까지 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color : var(--chat__time-color);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.news-label__mark{
+    background-color: rgb(220, 235, 220);
+    color : rgb(76, 110, 76);
+}
+
+.news-label__time {
+    display:flex;
+    align-items: center;
+    font-size: 12px;
+    color : var(--chat__time-color)
+}
+
+.action-radio:checked + .btn {
+    background-color: var(--action-btn-color);
+    border-color: var(--action-btn-color);
+    color: var(--action-btn-font-color);
+}
+
+
+/* ㅡㅡㅡㅡ 주식 css ㅡㅡㅡㅡ */
+
+.stock-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 32px;
+    display:none;
+    height : 100%;
+}
+  
+.stock-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 100px;
+}
+  
+.stock-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.stock-info {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+  
+.stock-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #222;
+}
+
+.stock-name--long {
+    font-size: 1.05rem; /* 긴 이름일 경우 폰트 크기 축소 */
+}
+  
+.stock-code {
+    font-size: 1rem;
+    color: #b0b8c1;
+    font-weight: 500;
+}
+
+/* 즐겨찾기 버튼 스타일 */
+.favorite-btn {
+    background: none !important;
+    border: none !important;
+    padding: 8px !important;
+    cursor: pointer !important;
+    border-radius: 50% !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    align-self: flex-start !important;
+    margin-top: 2px !important;
+}
+
+.favorite-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    transform: scale(1.1) !important;
+}
+
+.favorite-btn i {
+    font-size: 1.2rem !important;
+    transition: all 0.2s ease !important;
+    color: #6c757d !important;
+}
+
+/* 즐겨찾기 활성화 상태 */
+.favorite-btn i.bi-star-fill {
+    color: #ffc107 !important;
+}
+
+.favorite-btn:hover i.bi-star-fill {
+    color: #ffb300 !important;
+}
+  
+.stock-price-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+  
+.current-price {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #222;
+}
+  
+.price-change {
+    font-size: 1rem;
+    font-weight: 500;
+}
+  
+.price-change.positive { color: #1dbf60; }
+.price-change.negative { color: #e74c3c; }
+  
+.update-time {
+    font-size: 0.9rem;
+    color: #b0b8c1;
+}
+
+.stock-period-selector {
+    display: flex;
+    gap: 8px;
+}
+.period-button {
+    background-color: #f3f6fa;
+    border: none;
+    border-radius: 15px;
+    padding: 4px 15px; /* 기존 6px 12px에서 축소 */
+    font-size: 0.8rem; /* 기존 0.9rem에서 축소 */
+    font-weight: 500;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.period-button:hover {
+    background-color: #e9eef5;
+}
+.period-button.active {
+    background-color: var(--action-btn-color);
+    color: var(--action-btn-font-color);
+    font-weight: 600;
+}
+  
+.stock-chart {
+    background: #f3f6fa;
+    border-radius: 12px;
+    padding: 12px 8px;
+}
+  
+.stock-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+  
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+  
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 110px;
+    gap: 2px;
+}
+  
+.label {
+    font-size: 0.85rem; /* 기존 0.95rem에서 축소 */
+    color: #b0b8c1;
+    font-weight: 500;
+}
+  
+.value {
+    font-size: 1rem; /* 기존 1.08rem에서 축소 */
+    color: #222;
+    font-weight: 500;
+}
+
+.stock-placeholder,
+.news-placeholder {
+    text-align: center;
+    color: #aaa;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.stock-placeholder i,
+.news-placeholder i {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+
+
+.news-box a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.news-box a:hover {
+    text-decoration: underline;
+}
+
+/* 로딩 애니메이션 스타일 */
+.loading-message {
+    opacity: 0.7;
+    margin: 8px 0;
+}
+
+.loading-message .chat-bot__content {
+    font-size: 12px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    max-width: 150px;
+    color: #666;
+}
+
+.loading-message .chat-bot__time {
+    font-size: 10px;
+    color: #999;
+    margin-top: 2px;
+}
+
+.loading-dots {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.loading-dots span {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background-color: #007bff;
+    animation: loading-bounce 1.2s ease-in-out infinite both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes loading-bounce {
+    0%, 80%, 100% {
+        transform: scale(0);
+    }
+    40% {
+        transform: scale(1);
+    }
+}
+
+/* 레벨별 답변 마크 스타일 개선 */
+.beginner_answer__mark,
+.intermediate_answer__mark,
+.advanced_answer__mark {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    display: inline-block;
+    font-weight: 600;
+}
+
+.beginner_answer__mark {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+}
+
+.intermediate_answer__mark {
+    background-color: #fff3e0;
+    color: #f57c00;
+    border: 1px solid #ffcc02;
+}
+
+.advanced_answer__mark {
+    background-color: #fce4ec;
+    color: #c2185b;
+    border: 1px solid #f8bbd9;
+}
+
+/* 세션 박스 클릭 가능 표시 */
+
+.chat-list__box:hover {
+    background-color: #f5f5f5;
+}
+
+.chat-list__box.active {
+    background-color: #e8f4fd;
+    border: 1px solid #2196f3;
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.1);
+}
+
+.chat-list__title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.chat-list__box.active .chat-list__title {
+    color: #1976d2;
+    font-weight: 600;
+}
+
+/* 마크다운 콘텐츠 스타일링 - 간격 최적화 */
+.markdown-content {
+    line-height: 1.5;
+}
+
+.markdown-content h1 {
+    font-size: 1.4em;
+    font-weight: 700;
+    margin: 12px 0 8px 0;
+    color: #2c3e50;
+    border-bottom: 1px solid #e1e8ed;
+    padding-bottom: 4px;
+}
+
+.markdown-content h2 {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 10px 0 6px 0;
+    color: #34495e;
+}
+
+.markdown-content h3 {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 8px 0 4px 0;
+    color: #34495e;
+}
+
+.markdown-content p {
+    margin: 4px 0;
+    line-height: 1.5;
+}
+
+.markdown-content p:first-child {
+    margin-top: 0;
+}
+
+.markdown-content p:last-child {
+    margin-bottom: 0;
+}
+
+.markdown-content strong {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.markdown-content em {
+    font-style: italic;
+    color: #5d6d7e;
+}
+
+.markdown-content code {
+    background-color: #f4f4f4;
+    color: #e74c3c;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+    border: 1px solid #e1e8ed;
+}
+
+.markdown-content pre {
+    background-color: #f8f9fa;
+    border: 1px solid #e1e8ed;
+    border-radius: 4px;
+    padding: 8px;
+    margin: 6px 0;
+    overflow-x: auto;
+    line-height: 1.3;
+}
+
+.markdown-content pre code {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    color: #2c3e50;
+}
+
+.markdown-content ul, .markdown-content ol {
+    margin: 4px 0;
+    padding-left: 16px;
+}
+
+.markdown-content li {
+    margin: 2px 0;
+    line-height: 1.4;
+}
+
+.markdown-content blockquote {
+    border-left: 3px solid #3498db;
+    margin: 6px 0;
+    padding: 6px 12px;
+    background-color: #f8f9fa;
+    font-style: italic;
+    color: #5d6d7e;
+}
+
+.markdown-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 6px 0;
+    border: 1px solid #e1e8ed;
+    font-size: 0.9em;
+}
+
+.markdown-content th, .markdown-content td {
+    border: 1px solid #e1e8ed;
+    padding: 6px 8px;
+    text-align: left;
+}
+
+.markdown-content th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* 연속된 요소들 사이의 간격 최소화 */
+.markdown-content > *:first-child {
+    margin-top: 0 !important;
+}
+
+.markdown-content > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+.markdown-content h1 + p,
+.markdown-content h2 + p,
+.markdown-content h3 + p {
+    margin-top: 2px;
+}
+
+.markdown-content p + h1,
+.markdown-content p + h2,
+.markdown-content p + h3 {
+    margin-top: 8px;
+}
+
+.markdown-content ul + p,
+.markdown-content ol + p,
+.markdown-content p + ul,
+.markdown-content p + ol {
+    margin-top: 2px;
+}
+
+/* 줄바꿈 최소화 */
+.markdown-content br {
+    line-height: 0.8;
+}
+
+/* 주식 상세 보러가기 버튼 스타일 */
+.stock-actions {
+    margin-top: 20px;
+    padding: 16px;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.stock-detail-btn {
+    border: none;
+    color: white;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 25px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+.stock-detail-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.stock-detail-btn i {
+    font-size: 16px;
+}
