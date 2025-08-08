@@ -117,14 +117,15 @@ LLM의 널리지 컷오프 특성상 최신정보를 알기어렵기때문에 �
 ## 3️⃣ 기술 스택 및 파일 구조
 | 항목              | 내용                                                                                                                                                                                                                                                                                                         |
 | :---------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Language**      | ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) ![LangChain](https://img.shields.io/badge/LangChain-00863D?style=for-the-badge&logo=langchain&logoColor=white) ![RAG](https://img.shields.io/badge/RAG-8A2BE2?style=for-the-badge&logoColor=white) ![LangGraph](https://img.shields.io/badge/LangGraph-1E90FF?style=for-the-badge&logo=graphviz&logoColor=white) |
-| **Development**   | ![VS Code](https://img.shields.io/badge/VS%20Code-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![PyCharm](https://img.shields.io/badge/PyCharm-000000?style=for-the-badge&logo=pycharm&logoColor=white)                                                                                                                                         |
-| **Server**        | ![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white)                                                                                                                                                                                                                                              |
-| **Embedding**     | ![BAAI/bge-m3](https://img.shields.io/badge/BAAI/bge--m3-000000?style=for-the-badge&logo=huggingface&logoColor=white)                                                                                                                                                                                                                             |
-| **LLM Model**     | ![GPT-4o](https://img.shields.io/badge/GPT--4o-4B91FF?style=for-the-badge&logo=openai&logoColor=white)                                                                                                                                                                                                                                              |
-| **Collaboration Tool** | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)                                                                                                                                                                                                                                                  |
-| **Vector DB**     | ![FAISS](https://img.shields.io/badge/FAISS-4B8BEA?style=for-the-badge&logo=facebook&logoColor=white) ![Pinecone](https://img.shields.io/badge/Pinecone-3B77DD?style=for-the-badge&logo=pinecone&logoColor=white)                                                                                                                                |
-| **API 활용**      | ![Open Dart API](https://img.shields.io/badge/Open%20DART%20API-002D61?style=for-the-badge&logoColor=white) <br> ![Yahoo Finance](https://img.shields.io/badge/yfinance-144E8C?style=for-the-badge&logo=yahoo&logoColor=white) <br> ![PyKRX](https://img.shields.io/badge/pykrx-1F9F3F?style=for-the-badge&logoColor=white) <br> ![Naver News](https://img.shields.io/badge/Naver%20News%20Crawling-03C75A?style=for-the-badge&logo=naver&logoColor=white) ![Google API](https://img.shields.io/badge/Google%20Login%20API-4285F4?style=for-the-badge&logo=google&logoColor=white) <br> ![Naver API](https://img.shields.io/badge/Naver%20Login%20API-03C75A?style=for-the-badge&logo=naver&logoColor=white) <br> ![Kakao API](https://img.shields.io/badge/Kakao%20Login%20API-FFCD00?style=for-the-badge&logo=kakao&logoColor=black) <br>|
+| **Language** | ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) ![LangChain](https://img.shields.io/badge/LangChain-00863D?style=for-the-badge&logo=langchain&logoColor=white) ![RAG](https://img.shields.io/badge/RAG-8A2BE2?style=for-the-badge&logoColor=white) ![LangGraph](https://img.shields.io/badge/LangGraph-1E90FF?style=for-the-badge&logo=graphviz&logoColor=white) |
+| **Development** | ![VS Code](https://img.shields.io/badge/VS%20Code-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![PyCharm](https://img.shields.io/badge/PyCharm-000000?style=for-the-badge&logo=pycharm&logoColor=white) |
+| **Server** | ![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white) |
+| **Deployment & Infra** | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white) ![Amazon AWS](https://img.shields.io/badge/Amazon_AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white) |
+| **Embedding** | ![BAAI/bge-m3](https://img.shields.io/badge/BAAI/bge--m3-000000?style=for-the-badge&logo=huggingface&logoColor=white) |
+| **LLM Model** | ![GPT-4o](https://img.shields.io/badge/GPT--4o-4B91FF?style=for-the-badge&logo=openai&logoColor=white) |
+| **Collaboration Tool** | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white) |
+| **Vector DB** | ![FAISS](https://img.shields.io/badge/FAISS-4B8BEA?style=for-the-badge&logo=facebook&logoColor=white) |
+| **API 활용** | ![Open Dart API](https://img.shields.io/badge/Open%20DART%20API-002D61?style=for-the-badge&logoColor=white) <br> ![Yahoo Finance](https://img.shields.io/badge/yfinance-144E8C?style=for-the-badge&logo=yahoo&logoColor=white) <br> ![PyKRX](https://img.shields.io/badge/pykrx-1F9F3F?style=for-the-badge&logoColor=white) <br> ![Naver News](https://img.shields.io/badge/Naver%20News%20Crawling-03C75A?style=for-the-badge&logo=naver&logoColor=white) ![Google API](https://img.shields.io/badge/Google%20Login%20API-4285F4?style=for-the-badge&logo=google&logoColor=white) <br> ![Naver API](https://img.shields.io/badge/Naver%20Login%20API-03C75A?style=for-the-badge&logo=naver&logoColor=white) <br> ![Kakao API](https://img.shields.io/badge/Kakao%20Login%20API-FFCD00?style=for-the-badge&logo=kakao&logoColor=black) <br>|
 
 
 <hr>
@@ -285,6 +286,23 @@ HuggingFace의 BAAI/bge-m3 임베딩 모델을 사용하여 로컬에 저장된 
 각각의 인덱스에서 top-6 유사 문서를 검색할 수 있는 accounting_retriever와 business_retriever를 생성합니다.
 
 SelfQueryRetriever 시도 코드는 주석 처리되어 있으며, 현재는 일반 retriever만 반환합니다
+---
+
+#### 6. `stock_price_tool.py`
+yfinance 라이브러리를 사용하여 get_stock_price 함수를 만듭니다. 이 함수는 주식 티커(예: '005930.KS')를 입력받아 현재가, 등락률, 거래량 등 실시간 시세 정보를 조회하여 반환합니다. @tool 데코레이터로 감싸 LangGraph가 호출할 수 있는 명확한 기능 단위로 정의하는 것이 핵심입니다.
+---
+
+#### 7. `stock_news_retriever.py`
+네이버 뉴스 검색 API나 웹 크롤링을 통해 특정 기업 관련 최신 뉴스 기사들을 수집하는 search_news 함수를 구현합니다. 수집된 뉴스 텍스트들을 임베딩 모델(예: bge-m3)로 벡터화하고 FAISS 같은 벡터 DB에 저장하여, 사용자의 질문과 가장 관련 높은 뉴스 내용을 RAG(Retrieval-Augmented Generation) 방식으로 찾아내는 검색기(Retriever) 역할을 수행합니다.
+---
+
+#### 8. `agent_state.py` 
+TypedDict를 사용하여 에이전트의 작업 내용을 기록할 '상태'의 형식을 정의합니다. 사용자의 원본 질문(question)과 함께, 위 stock_price_tool의 결과가 담길 stock_price 필드, stock_news_retriever가 찾아온 뉴스가 담길 related_news 필드 등을 명시합니다. 이 상태는 모든 노드에 전달되는 중앙 데이터 버스입니다.
+---
+
+#### 9. `graph_router.py` 
+에이전트의 '상태'를 보고 다음 행동을 결정하는 '라우터(Router)' 함수를 작성합니다. 예를 들어, 상태에 related_news는 있지만 stock_price 정보가 없다면 '시세 조회 도구' 노드를 호출하라고 지시합니다. 모든 정보가 준비되면 '최종 답변 생성' 노드로 보내는 등, **조건부 엣지(conditional edge)**의 핵심 두뇌 역할을 담당합니다.
+
 ### 흐름
 ## 1. 사용자 인증 흐름 (일반 로그인 및 소셜 로그인)
 
@@ -393,22 +411,23 @@ OpenAI GPT-4o (분석 리포트 생성)
   <img src="image/결과1.png" width="auto" alt="결과1"/><br>
   <img src="image/결과2.png" width="auto" alt="결과2"/><br>
   <img src="image/결과3.png" width="auto" alt="결과3"/><br>
-  <img src="image/결과4.png" width="auto" alt="결과4"/><br> 
 
 
 ### 추가 구현 사항
 #### 1. 채팅창 옆에 뉴스와 주식을 볼 수 있는 칸을 구현하여 기업에 관한 정보를 쉽게 얻을 수 있도록 구현
-<img src="image/결과1.png" width="auto" alt="결과1"/><br>
+<img src="image/chat_page.png" width="auto" alt="결과1"/><br>
+<img src="image/news.png" width="auto" alt="결과1"/><br>
 - 밑의 입력창에 기업명을 적으면 그 기업과 관련된 기사들이 뜨는 식으로 구현했습니다.
 - 주식 칸에서 기업명을 검색하면 그 기업의 주가 정보가 나오도록 구현했습니다.
 
 #### 2. 관심기업 및 종합보고서 기능 그리고 주식조회와 왼쪽의 댓글코멘트와 좋아요의 기능을 추가
-<img src="image/결과3.png" width="auto" alt="결과3"/><br>
+<img src="image/stock.png" width="auto" alt="결과3"/><br>
 - 해당 주식에 대한 여러 사람들의 생각을 볼 수 있게 댓글창을 구현하였으며 거기다 댓글에 좋아요를 눌러 서로 교류할 수 있도록 하였습니다.
 
 #### 3. 마이페이지와 회원가입 기능 추가
-<img src="image/결과4.png" width="auto" alt="결과4"/><br> 
-- 로그인한 회원의 정보와 그 정보를 수정할 수 있는 기능을 추가하였습니다.
+<img src="image/mypage.png" width="auto" alt="마이페이지"/><br> 
+<img src="image/login.png" width="auto" alt="로그인"/><br> 
+- 로그인 및 로그인한 회원의 정보와 그 정보를 수정할 수 있는 기능을 추가하였습니다.
 
 <hr>
 
